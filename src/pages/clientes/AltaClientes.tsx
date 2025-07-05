@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Save, ArrowLeft } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ClienteService } from '../../services/api';
+import { clienteService } from '../../services/api';
 import { Button, Input, Card, CardHeader, CardBody } from '../../components/ui';
 import { toast } from 'react-toastify';
-import type { ClienteFormData } from '../../types';
+import type { ClienteForm } from '../../types';
 
 export const AltaClientes: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   
-  const [formData, setFormData] = useState<ClienteFormData>({
+  const [formData, setFormData] = useState<ClienteForm>({
     nombre: '',
     apellidos: '',
     celular: '',
@@ -21,27 +21,23 @@ export const AltaClientes: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const createClienteMutation = useMutation({
-    mutationFn: ClienteService.create,
-    onSuccess: (result) => {
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success('Cliente creado exitosamente');
-        queryClient.invalidateQueries({ queryKey: ['clientes'] });
-        queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-        
-        // Limpiar formulario
-        setFormData({
-          nombre: '',
-          apellidos: '',
-          celular: '',
-          comentarios: '',
-        });
-        setErrors({});
-      }
+    mutationFn: clienteService.create,
+    onSuccess: () => {
+      toast.success('Cliente creado exitosamente');
+      queryClient.invalidateQueries({ queryKey: ['clientes'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      
+      // Limpiar formulario
+      setFormData({
+        nombre: '',
+        apellidos: '',
+        celular: '',
+        comentarios: '',
+      });
+      setErrors({});
     },
-    onError: () => {
-      toast.error('Error al crear cliente');
+    onError: (error) => {
+      toast.error(error.message || 'Error al crear cliente');
     },
   });
 
@@ -77,7 +73,7 @@ export const AltaClientes: React.FC = () => {
     if (!validateForm()) return;
 
     // Limpiar datos antes de enviar
-    const cleanData: ClienteFormData = {
+    const cleanData: ClienteForm = {
       nombre: formData.nombre.trim(),
       apellidos: formData.apellidos.trim(),
       celular: formData.celular?.trim() || undefined,
@@ -199,10 +195,10 @@ export const AltaClientes: React.FC = () => {
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => navigate('/clientes/busqueda')}
-                className="flex-1"
+                onClick={() => navigate('/')}
+                disabled={createClienteMutation.isPending}
               >
-                Ver Clientes
+                Cancelar
               </Button>
             </div>
           </form>
@@ -213,18 +209,16 @@ export const AltaClientes: React.FC = () => {
       <Card className="bg-blue-50 border-blue-200">
         <CardBody>
           <div className="flex items-start space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
-              <User className="w-5 h-5 text-blue-600" />
+            <div className="p-1 bg-blue-100 rounded-full mt-1">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
             </div>
-            <div>
-              <h3 className="font-medium text-blue-900 mb-1">
-                Información sobre el registro de clientes
-              </h3>
-              <ul className="text-sm text-blue-800 space-y-1">
-                <li>• Los campos nombre y apellidos son obligatorios</li>
-                <li>• El celular y comentarios son opcionales</li>
-                <li>• Los campos de visitas y monto acumulado se calculan automáticamente</li>
-                <li>• Una vez registrado, el cliente no puede ser eliminado</li>
+            <div className="text-sm text-blue-800">
+              <p className="font-medium mb-1">Información importante:</p>
+              <ul className="space-y-1 text-blue-700">
+                <li>• Los campos de nombre y apellidos son obligatorios</li>
+                <li>• El celular es opcional pero recomendado para contacto</li>
+                <li>• Las visitas y monto acumulado se calculan automáticamente</li>
+                <li>• Los comentarios pueden incluir preferencias o notas especiales</li>
               </ul>
             </div>
           </div>

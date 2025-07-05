@@ -13,7 +13,7 @@ import {
   CalendarDays
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { DashboardService } from '../services/api';
+import { statsService } from '../services/api';
 import { Card, CardBody } from '../components/ui';
 
 const dashboardCards = [
@@ -66,11 +66,7 @@ export const Home: React.FC = () => {
 
   const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryKey: ['dashboard-stats'],
-    queryFn: async () => {
-      const { data, error } = await DashboardService.getStats();
-      if (error) throw new Error(error);
-      return data;
-    },
+    queryFn: statsService.getDashboardStats,
   });
 
   const formatCurrency = (amount: number) => {
@@ -116,7 +112,7 @@ export const Home: React.FC = () => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Total Clientes</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.totalClientes}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.total_clientes}</p>
                   </div>
                 </div>
               </CardBody>
@@ -130,7 +126,7 @@ export const Home: React.FC = () => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Total Eventos</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.totalEventos}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.total_eventos}</p>
                   </div>
                 </div>
               </CardBody>
@@ -144,7 +140,7 @@ export const Home: React.FC = () => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Total Asistencias</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.totalAsistencias}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.total_asistencias}</p>
                   </div>
                 </div>
               </CardBody>
@@ -158,7 +154,7 @@ export const Home: React.FC = () => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Ingresos Totales</p>
-                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.ingresosTotales)}</p>
+                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.ingresos_totales)}</p>
                   </div>
                 </div>
               </CardBody>
@@ -198,8 +194,8 @@ export const Home: React.FC = () => {
                     {card.description}
                   </p>
                   <div className="mt-4 flex items-center text-primary-600 text-sm font-medium">
-                    <span>Acceder</span>
-                    <TrendingUp className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
+                    <span className="mr-2">Acceder</span>
+                    <TrendingUp className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
                   </div>
                 </CardBody>
               </Card>
@@ -209,19 +205,20 @@ export const Home: React.FC = () => {
       </div>
 
       {/* Información adicional */}
-      <Card className="bg-gradient-to-r from-primary-50 to-secondary-50 border-primary-200">
+      <Card className="bg-gradient-to-r from-primary-50 to-primary-100 border-primary-200">
         <CardBody>
-          <div className="flex items-center">
-            <div className="p-3 bg-primary-100 rounded-lg">
-              <Users className="w-6 h-6 text-primary-600" />
+          <div className="flex items-start space-x-4">
+            <div className="p-3 bg-primary-200 rounded-lg flex-shrink-0">
+              <TrendingUp className="w-6 h-6 text-primary-700" />
             </div>
-            <div className="ml-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Sistema de Gestión Senda del Colibrí
+            <div>
+              <h3 className="text-lg font-semibold text-primary-900 mb-2">
+                Sistema de Gestión Integral
               </h3>
-              <p className="text-gray-600 mt-1">
-                Gestiona clientes, eventos, referidos y asistencias de manera eficiente. 
-                Mantén un registro completo de todas las actividades de meditación.
+              <p className="text-primary-800 leading-relaxed">
+                Este sistema permite gestionar de manera integral todos los aspectos del centro de meditación: 
+                desde el registro de clientes y eventos, hasta el seguimiento de asistencias y referidos. 
+                Todas las estadísticas se actualizan automáticamente para brindar información en tiempo real.
               </p>
             </div>
           </div>

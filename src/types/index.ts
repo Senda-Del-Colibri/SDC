@@ -1,68 +1,73 @@
-export interface Cliente {
-  id: string;
+// =====================================================
+// Tipos para el Sistema de Gestión Senda del Colibrí
+// =====================================================
+
+// Tipos base
+export interface BaseEntity {
+  id: number;
+  created_at: string;
+  updated_at?: string;
+}
+
+// Cliente
+export interface Cliente extends BaseEntity {
   nombre: string;
   apellidos: string;
   celular?: string;
   comentarios?: string;
   visitas: number;
   monto_acumulado: number;
-  created_at: string;
-  updated_at: string;
 }
 
-export interface Evento {
-  id: string;
+// Evento
+export interface Evento extends BaseEntity {
   nombre: string;
   ubicacion: string;
   gasto: number;
   total_cobrado: number;
   cantidad_personas: number;
-  created_at: string;
-  updated_at: string;
 }
 
+// Referido
 export interface Referido {
-  id: string;
-  cliente_id: string;
-  referido_id: string;
-  cliente?: Cliente;
-  referido?: Cliente;
+  id: number;
+  cliente_id: number;
+  referido_id: number;
   created_at: string;
 }
 
+// Asistencia
 export interface Asistencia {
-  id: string;
-  cliente_id: string;
-  evento_id: string;
+  id: number;
+  cliente_id: number;
+  evento_id: number;
   monto_pagado: number;
-  cliente?: Cliente;
-  evento?: Evento;
   created_at: string;
 }
 
-// Tipos para formularios
-export interface ClienteFormData {
+// Tipos para formularios (sin campos calculados automáticamente)
+export interface ClienteForm {
   nombre: string;
   apellidos: string;
   celular?: string;
   comentarios?: string;
 }
 
-export interface EventoFormData {
+export interface EventoForm {
   nombre: string;
   ubicacion: string;
   gasto: number;
 }
 
-export interface AsistenciaFormData {
-  cliente_id: string;
-  evento_id: string;
-  monto_pagado: number;
+export interface ReferidoForm {
+  cliente_id: number;
+  referido_id: number;
 }
 
-export interface ReferidoFormData {
-  cliente_id: string;
-  referido_id: string;
+export interface AsistenciaForm {
+  cliente_id: number;
+  evento_id: number;
+  monto_pagado: number;
 }
 
 // Tipos para respuestas de API
@@ -78,25 +83,14 @@ export interface PaginatedResponse<T> {
   limit: number;
 }
 
-// Tipos para filtros y búsqueda
-export interface ClienteFilters {
-  nombre?: string;
-  apellidos?: string;
-  celular?: string;
-}
-
-export interface EventoFilters {
-  nombre?: string;
-  ubicacion?: string;
-}
-
 // Tipos para estadísticas del dashboard
 export interface DashboardStats {
-  totalClientes: number;
-  totalEventos: number;
-  totalReferidos: number;
-  totalAsistencias: number;
-  ingresosTotales: number;
+  total_clientes: number;
+  total_eventos: number;
+  total_referidos: number;
+  total_asistencias: number;
+  ingresos_totales: number;
+  clientes_activos: number;
 }
 
 // Tipos para autenticación
@@ -108,6 +102,6 @@ export interface User {
 
 export interface AuthState {
   user: User | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
+  loading: boolean;
+  error: string | null;
 } 

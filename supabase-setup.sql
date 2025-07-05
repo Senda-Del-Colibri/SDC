@@ -2,9 +2,15 @@
 -- Sistema de Gestión Senda del Colibrí - Setup SQL
 -- =====================================================
 
+-- Secuencias personalizadas para IDs
+CREATE SEQUENCE clientes_id_seq START 100000 INCREMENT 1;
+CREATE SEQUENCE eventos_id_seq START 1 INCREMENT 1;
+CREATE SEQUENCE referidos_id_seq START 1 INCREMENT 1;
+CREATE SEQUENCE asistencias_id_seq START 1 INCREMENT 1;
+
 -- Tabla Clientes
 CREATE TABLE clientes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id INTEGER PRIMARY KEY DEFAULT nextval('clientes_id_seq'),
   nombre VARCHAR(100) NOT NULL,
   apellidos VARCHAR(200) NOT NULL,
   celular VARCHAR(15),
@@ -17,7 +23,7 @@ CREATE TABLE clientes (
 
 -- Tabla Eventos
 CREATE TABLE eventos (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id INTEGER PRIMARY KEY DEFAULT nextval('eventos_id_seq'),
   nombre VARCHAR(200) NOT NULL,
   ubicacion VARCHAR(300) NOT NULL,
   gasto DECIMAL(10,2) DEFAULT 0 CHECK (gasto >= 0),
@@ -29,9 +35,9 @@ CREATE TABLE eventos (
 
 -- Tabla Referidos
 CREATE TABLE referidos (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  cliente_id UUID REFERENCES clientes(id) NOT NULL,
-  referido_id UUID REFERENCES clientes(id) NOT NULL,
+  id INTEGER PRIMARY KEY DEFAULT nextval('referidos_id_seq'),
+  cliente_id INTEGER REFERENCES clientes(id) NOT NULL,
+  referido_id INTEGER REFERENCES clientes(id) NOT NULL,
   created_at TIMESTAMP DEFAULT NOW(),
   UNIQUE(cliente_id, referido_id),
   CHECK (cliente_id != referido_id)
@@ -39,9 +45,9 @@ CREATE TABLE referidos (
 
 -- Tabla Asistencias
 CREATE TABLE asistencias (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  cliente_id UUID REFERENCES clientes(id) NOT NULL,
-  evento_id UUID REFERENCES eventos(id) NOT NULL,
+  id INTEGER PRIMARY KEY DEFAULT nextval('asistencias_id_seq'),
+  cliente_id INTEGER REFERENCES clientes(id) NOT NULL,
+  evento_id INTEGER REFERENCES eventos(id) NOT NULL,
   monto_pagado DECIMAL(10,2) NOT NULL CHECK (monto_pagado >= 0),
   created_at TIMESTAMP DEFAULT NOW(),
   UNIQUE(cliente_id, evento_id)
@@ -170,7 +176,10 @@ CREATE INDEX idx_asistencias_evento_id ON asistencias(evento_id);
 -- Este script configura completamente la base de datos para el
 -- Sistema de Gestión Senda del Colibrí con:
 -- 
--- 1. Tablas principales con constraints apropiados
+-- 1. Tablas principales con IDs numéricos personalizados:
+--    - Clientes: IDs de 6 dígitos comenzando en 100000
+--    - Eventos: IDs comenzando en 1
+--    - Referidos y Asistencias: IDs secuenciales desde 1
 -- 2. Triggers automáticos para estadísticas
 -- 3. Row Level Security habilitado
 -- 4. Índices para optimización de consultas
