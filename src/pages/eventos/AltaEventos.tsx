@@ -29,6 +29,8 @@ export const AltaEventos: React.FC = () => {
     gasto: 0
   });
   
+  const [gastoInput, setGastoInput] = useState<string>('');
+  
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
@@ -100,6 +102,20 @@ export const AltaEventos: React.FC = () => {
     }
   };
 
+  // Manejar cambio específico del gasto
+  const handleGastoChange = (value: string) => {
+    setGastoInput(value);
+    const numValue = value === '' ? 0 : parseFloat(value);
+    if (!isNaN(numValue)) {
+      setFormData(prev => ({ ...prev, gasto: numValue }));
+      
+      // Limpiar error del campo
+      if (errors.gasto) {
+        setErrors(prev => ({ ...prev, gasto: undefined }));
+      }
+    }
+  };
+
   // Enviar formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,6 +144,7 @@ export const AltaEventos: React.FC = () => {
       ubicacion: '',
       gasto: 0
     });
+    setGastoInput('');
     setErrors({});
   };
 
@@ -221,8 +238,8 @@ export const AltaEventos: React.FC = () => {
                     <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <Input
                       type="number"
-                      value={formData.gasto}
-                      onChange={(e) => handleInputChange('gasto', parseFloat(e.target.value) || 0)}
+                      value={gastoInput}
+                      onChange={(e) => handleGastoChange(e.target.value)}
                       placeholder="0.00"
                       className={`pl-10 ${errors.gasto ? 'border-red-500' : ''}`}
                       min="0"

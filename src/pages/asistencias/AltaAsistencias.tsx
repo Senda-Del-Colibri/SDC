@@ -39,6 +39,7 @@ export const AltaAsistencias: React.FC = () => {
   const [showEventoDropdown, setShowEventoDropdown] = useState(false);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null);
+  const [montoInput, setMontoInput] = useState<string>('');
   
   const queryClient = useQueryClient();
 
@@ -146,12 +147,15 @@ export const AltaAsistencias: React.FC = () => {
 
   // Manejar cambio de monto
   const handleMontoChange = (value: string) => {
-    const numValue = parseFloat(value) || 0;
-    setFormData(prev => ({ ...prev, monto_pagado: numValue }));
-    
-    // Limpiar error del campo
-    if (errors.monto_pagado) {
-      setErrors(prev => ({ ...prev, monto_pagado: undefined }));
+    setMontoInput(value);
+    const numValue = value === '' ? 0 : parseFloat(value);
+    if (!isNaN(numValue)) {
+      setFormData(prev => ({ ...prev, monto_pagado: numValue }));
+      
+      // Limpiar error del campo
+      if (errors.monto_pagado) {
+        setErrors(prev => ({ ...prev, monto_pagado: undefined }));
+      }
     }
   };
 
@@ -182,6 +186,7 @@ export const AltaAsistencias: React.FC = () => {
     setSelectedEvento(null);
     setShowClienteDropdown(false);
     setShowEventoDropdown(false);
+    setMontoInput('');
   };
 
   // Formatear moneda
@@ -373,7 +378,7 @@ export const AltaAsistencias: React.FC = () => {
                     <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <Input
                       type="number"
-                      value={formData.monto_pagado}
+                      value={montoInput}
                       onChange={(e) => handleMontoChange(e.target.value)}
                       placeholder="0.00"
                       className={`pl-10 ${errors.monto_pagado ? 'border-red-500' : ''}`}
