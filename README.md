@@ -1,251 +1,142 @@
-# Sistema de Gestión Senda del Colibrí
+# SDC - Sistema de Gestión Senda del Colibrí
 
-Sistema web completo para la gestión de un centro de meditación, desarrollado con React, TypeScript, Vite y Supabase.
+Sistema web para la gestión de clientes, eventos y asistencias del centro de meditación Senda del Colibrí.
 
-## 🌟 Características
+## 🚀 Tecnologías
 
-- **Gestión de Clientes**: Registro, búsqueda y actualización de información de clientes
-- **Gestión de Eventos**: Creación y administración de eventos de meditación
-- **Sistema de Referidos**: Seguimiento de referencias entre clientes
-- **Control de Asistencias**: Registro de asistencia a eventos con montos
-- **Dashboard Interactivo**: Estadísticas en tiempo real y navegación intuitiva
-- **Autenticación Segura**: Sistema de login con Supabase Auth
-- **Diseño Responsivo**: Interfaz optimizada para móviles y escritorio
+- **Frontend**: React 18 + TypeScript + Vite
+- **Styling**: TailwindCSS
+- **Backend**: Supabase (PostgreSQL + Auth)
+- **State Management**: React Query
+- **Routing**: React Router DOM
+- **Icons**: Lucide React
+- **Notifications**: React Toastify
 
-## 🛠️ Tecnologías
+## 📋 Funcionalidades
 
-- **Frontend**: React 18, TypeScript, Vite
-- **Estilos**: TailwindCSS con tema personalizado
-- **Base de Datos**: Supabase (PostgreSQL)
-- **Autenticación**: Supabase Auth
-- **Estado**: React Query para manejo de estado del servidor
-- **Navegación**: React Router DOM v6
-- **Iconos**: Lucide React
-- **Notificaciones**: React Toastify
+- ✅ **Dashboard** con estadísticas generales
+- ✅ **Gestión de Clientes** (alta y búsqueda)
+- ✅ **Gestión de Eventos** (alta y búsqueda)
+- ✅ **Registro de Asistencias**
+- ✅ **Consulta de Referidos**
+- ✅ **Autenticación** con Supabase
+- ✅ **Responsive Design**
 
-## 📊 Esquema de Base de Datos
+## 🛠️ Desarrollo Local
 
-### Estructura de IDs
-- **Clientes**: IDs numéricos de 6 dígitos (comenzando en 100000)
-- **Eventos**: IDs numéricos comenzando en 1
-- **Referidos**: IDs numéricos secuenciales desde 1
-- **Asistencias**: IDs numéricos secuenciales desde 1
-
-### Tablas
-
-#### Clientes
-```sql
-CREATE TABLE clientes (
-  id INTEGER PRIMARY KEY DEFAULT nextval('clientes_id_seq'), -- 6 dígitos: 100000+
-  nombre VARCHAR(100) NOT NULL,
-  apellidos VARCHAR(200) NOT NULL,
-  celular VARCHAR(15),
-  comentarios TEXT,
-  visitas INTEGER DEFAULT 0, -- Calculado automáticamente
-  monto_acumulado DECIMAL(10,2) DEFAULT 0, -- Calculado automáticamente
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-```
-
-#### Eventos
-```sql
-CREATE TABLE eventos (
-  id INTEGER PRIMARY KEY DEFAULT nextval('eventos_id_seq'), -- Comenzando en 1
-  nombre VARCHAR(200) NOT NULL,
-  ubicacion VARCHAR(300) NOT NULL,
-  gasto DECIMAL(10,2) DEFAULT 0,
-  total_cobrado DECIMAL(10,2) DEFAULT 0, -- Calculado automáticamente
-  cantidad_personas INTEGER DEFAULT 0, -- Calculado automáticamente
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-```
-
-#### Referidos
-```sql
-CREATE TABLE referidos (
-  id INTEGER PRIMARY KEY DEFAULT nextval('referidos_id_seq'),
-  cliente_id INTEGER REFERENCES clientes(id) NOT NULL,
-  referido_id INTEGER REFERENCES clientes(id) NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW(),
-  UNIQUE(cliente_id, referido_id),
-  CHECK (cliente_id != referido_id)
-);
-```
-
-#### Asistencias
-```sql
-CREATE TABLE asistencias (
-  id INTEGER PRIMARY KEY DEFAULT nextval('asistencias_id_seq'),
-  cliente_id INTEGER REFERENCES clientes(id) NOT NULL,
-  evento_id INTEGER REFERENCES eventos(id) NOT NULL,
-  monto_pagado DECIMAL(10,2) NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW(),
-  UNIQUE(cliente_id, evento_id)
-);
-```
-
-## 🚀 Instalación y Configuración
-
-### Prerrequisitos
-- Node.js 18 o superior
-- npm o yarn
-- Cuenta de Supabase
-
-### Pasos de Instalación
-
-1. **Clonar el repositorio**
 ```bash
-git clone <url-del-repositorio>
-cd SDC
-```
-
-2. **Instalar dependencias**
-```bash
+# Instalar dependencias
 npm install
-```
 
-3. **Configurar variables de entorno**
-```bash
-cp env.example .env.local
-```
-
-Editar `.env.local` con tus credenciales de Supabase:
-```env
-VITE_SUPABASE_URL=tu_supabase_url
-VITE_SUPABASE_ANON_KEY=tu_supabase_anon_key
-```
-
-4. **Configurar la base de datos**
-- Crear un nuevo proyecto en [Supabase](https://supabase.com)
-- Ejecutar el script `supabase-setup.sql` en el SQL Editor de Supabase
-- Esto creará todas las tablas, triggers, índices y políticas de seguridad
-
-5. **Ejecutar en desarrollo**
-```bash
+# Ejecutar en modo desarrollo
 npm run dev
+
+# Construir para producción
+npm run build
+
+# Vista previa de producción
+npm run preview
 ```
 
-6. **Construir para producción**
+## 🌐 Deploy en GitHub Pages
+
+### Configuración Automática
+
+El proyecto está configurado para deploy automático en GitHub Pages usando GitHub Actions.
+
+### Deploy Manual
+
 ```bash
-npm run build
+# Instalar gh-pages si no está instalado
+npm install -g gh-pages
+
+# Deploy manual
+npm run deploy
+```
+
+### Configuración en GitHub
+
+1. Ve a **Settings** > **Pages** en tu repositorio
+2. Selecciona **Source**: GitHub Actions
+3. El deploy se ejecutará automáticamente en cada push a `main`
+
+### URL de Acceso
+
+Una vez deployado, la aplicación estará disponible en:
+```
+https://tu-usuario.github.io/SDC/
 ```
 
 ## 📁 Estructura del Proyecto
 
 ```
 src/
-├── components/           # Componentes reutilizables
-│   ├── ui/              # Componentes base (Button, Input, Card, etc.)
-│   ├── Layout.tsx       # Layout principal con navegación
-│   └── ProtectedRoute.tsx
-├── pages/               # Páginas de la aplicación
-│   ├── clientes/        # Módulo de clientes
-│   ├── eventos/         # Módulo de eventos
-│   ├── referidos/       # Módulo de referidos
-│   ├── asistencias/     # Módulo de asistencias
-│   ├── Home.tsx         # Dashboard principal
-│   └── Login.tsx        # Página de login
-├── services/            # Servicios y API
-│   ├── supabase.ts      # Cliente de Supabase
-│   ├── authService.ts   # Servicios de autenticación
-│   └── api.ts           # Servicios de API para cada módulo
-├── hooks/               # Hooks personalizados
-├── types/               # Definiciones de tipos TypeScript
-├── utils/               # Utilidades y helpers
-└── styles/              # Estilos globales
+├── components/          # Componentes reutilizables
+│   ├── ui/             # Componentes UI básicos
+│   └── Layout.tsx      # Layout principal
+├── pages/              # Páginas de la aplicación
+│   ├── auth/           # Páginas de autenticación
+│   ├── clientes/       # Gestión de clientes
+│   ├── eventos/        # Gestión de eventos
+│   └── asistencias/    # Registro de asistencias
+├── services/           # Servicios y API
+├── hooks/              # Custom hooks
+├── types/              # Definiciones de tipos
+└── utils/              # Utilidades
 ```
 
-## 🔧 Configuración de Desarrollo
+## 🔧 Configuración
 
-### Scripts Disponibles
+### Variables de Entorno
+
+Crea un archivo `.env.local` con:
+
+```env
+VITE_SUPABASE_URL=tu_supabase_url
+VITE_SUPABASE_ANON_KEY=tu_supabase_anon_key
+```
+
+### Base de Datos
+
+Ejecuta el script `supabase-setup.sql` en tu proyecto de Supabase para crear las tablas y configuraciones necesarias.
+
+## 📦 Scripts Disponibles
+
 - `npm run dev` - Servidor de desarrollo
-- `npm run build` - Construcción para producción
-- `npm run preview` - Vista previa de la construcción
-- `npm run lint` - Verificación de código con ESLint
-
-### Arquitectura de Componentes
-El proyecto sigue una arquitectura modular basada en:
-- **Componentes UI reutilizables** en `components/ui/`
-- **Páginas específicas** organizadas por módulo
-- **Servicios centralizados** para manejo de datos
-- **Hooks personalizados** para lógica compartida
-- **Tipos TypeScript** para seguridad de tipos
-
-## 📋 Reglas de Negocio
-
-### Clientes
-- ✅ Crear, leer, actualizar
-- ❌ No se pueden eliminar
-- 🔄 Visitas y monto acumulado se calculan automáticamente
-
-### Eventos
-- ✅ Crear, leer, actualizar
-- ❌ No se pueden eliminar
-- 🔄 Total cobrado y cantidad de personas se calculan automáticamente
-
-### Referidos
-- ✅ Crear, leer
-- ❌ No se pueden actualizar ni eliminar
-- 🚫 Un cliente no puede referirse a sí mismo
-- 🔒 Relación única entre cliente y referido
-
-### Asistencias
-- ✅ Solo crear
-- ❌ No se pueden actualizar ni eliminar
-- 🔒 Una asistencia por cliente por evento
-- 🔄 Actualiza automáticamente estadísticas de cliente y evento
-
-## 🎨 Diseño y UX
-
-- **Tema de colores**: Inspirado en la meditación con tonos tierra y verdes
-- **Responsive**: Diseño mobile-first con TailwindCSS
-- **Accesibilidad**: Componentes accesibles con ARIA labels
-- **Animaciones**: Transiciones suaves y feedback visual
-- **Iconografía**: Lucide React para iconos consistentes
+- `npm run build` - Construir para producción
+- `npm run preview` - Vista previa de producción
+- `npm run lint` - Linter de código
+- `npm run deploy` - Deploy manual a GitHub Pages
 
 ## 🔒 Seguridad
 
-- **Row Level Security (RLS)** habilitado en todas las tablas
-- **Autenticación requerida** para todas las operaciones
-- **Validación de datos** en frontend y backend
-- **Sanitización de inputs** para prevenir inyecciones
-- **Políticas de acceso** configuradas en Supabase
+- Autenticación mediante Supabase Auth
+- Row Level Security (RLS) habilitado
+- Validaciones tanto en frontend como backend
+- Manejo seguro de variables de entorno
 
-## 🚀 Despliegue
+## 📱 Responsive
 
-### Vercel (Recomendado)
-1. Conectar repositorio a Vercel
-2. Configurar variables de entorno en Vercel
-3. Deploy automático en cada push
+La aplicación está optimizada para:
+- 📱 **Mobile**: Navegación con menú hamburguesa
+- 💻 **Desktop**: Barra lateral colapsable
+- 📊 **Tablet**: Diseño adaptativo
 
-### Netlify
-1. Conectar repositorio a Netlify
-2. Configurar variables de entorno
-3. Deploy automático
+## 🤝 Contribuir
 
-### Manual
-```bash
-npm run build
-# Subir carpeta dist/ a tu servidor web
-```
-
-## 🤝 Contribución
-
-1. Fork del proyecto
-2. Crear rama para feature (`git checkout -b feature/AmazingFeature`)
-3. Commit de cambios (`git commit -m 'Add some AmazingFeature'`)
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
 4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir Pull Request
+5. Abre un Pull Request
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
+Este proyecto es privado y está destinado únicamente para uso interno de Senda del Colibrí.
 
-## 📞 Soporte
+## 🆘 Soporte
 
-Para soporte o preguntas sobre el sistema, contactar al equipo de desarrollo.
+Para soporte técnico o preguntas sobre el sistema, contacta al administrador del proyecto.
 
 ---
 
