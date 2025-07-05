@@ -243,14 +243,86 @@ export const asistenciaService = {
 
   // Crear nueva asistencia
   async create(asistencia: AsistenciaForm): Promise<Asistencia> {
-    const { data, error } = await supabase
-      .from('asistencias')
-      .insert(asistencia)
-      .select()
-      .single();
+    // Usar una transacción para garantizar consistencia
+    const { data, error } = await supabase.rpc('create_asistencia_with_stats', {
+      p_cliente_id: asistencia.cliente_id,
+      p_evento_id: asistencia.evento_id,
+      p_monto_pagado: asistencia.monto_pagado
+    });
     
-    if (error) throw error;
+    if (error) {
+      // Si la función RPC falla, intentar método manual
+      console.warn('RPC failed, trying manual method:', error);
+      return this.createManual(asistencia);
+    }
+    
     return data;
+  },
+
+  // Método manual de respaldo para crear asistencia
+  async createManual(asistencia: AsistenciaForm): Promise<Asistencia> {
+    try {
+      // 1. Crear la asistencia
+      const { data: newAsistencia, error: asistenciaError } = await supabase
+        .from('asistencias')
+        .insert(asistencia)
+        .select()
+        .single();
+      
+      if (asistenciaError) throw asistenciaError;
+
+      // 2. Obtener datos actuales del cliente
+      const { data: clienteActual, error: clienteGetError } = await supabase
+        .from('clientes')
+        .select('visitas, monto_acumulado')
+        .eq('id', asistencia.cliente_id)
+        .single();
+      
+      if (!clienteGetError && clienteActual) {
+        // Actualizar estadísticas del cliente
+        const { error: clienteError } = await supabase
+          .from('clientes')
+          .update({
+            visitas: clienteActual.visitas + 1,
+            monto_acumulado: clienteActual.monto_acumulado + asistencia.monto_pagado,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', asistencia.cliente_id);
+        
+        if (clienteError) {
+          console.error('Error updating client stats:', clienteError);
+        }
+      }
+
+      // 3. Obtener datos actuales del evento
+      const { data: eventoActual, error: eventoGetError } = await supabase
+        .from('eventos')
+        .select('cantidad_personas, total_cobrado')
+        .eq('id', asistencia.evento_id)
+        .single();
+      
+      if (!eventoGetError && eventoActual) {
+        // Actualizar estadísticas del evento
+        const { error: eventoError } = await supabase
+          .from('eventos')
+          .update({
+            cantidad_personas: eventoActual.cantidad_personas + 1,
+            total_cobrado: eventoActual.total_cobrado + asistencia.monto_pagado,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', asistencia.evento_id);
+        
+        if (eventoError) {
+          console.error('Error updating event stats:', eventoError);
+        }
+      }
+
+      return newAsistencia;
+      
+    } catch (error) {
+      console.error('Error in createManual:', error);
+      throw error;
+    }
   }
 };
 
