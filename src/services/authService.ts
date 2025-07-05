@@ -16,7 +16,8 @@ export class AuthService {
         user: data.user ? {
           id: data.user.id,
           email: data.user.email!,
-          created_at: data.user.created_at
+          created_at: data.user.created_at,
+          user_metadata: data.user.user_metadata
         } : null,
         error: null 
       };
@@ -39,7 +40,8 @@ export class AuthService {
         user: data.user ? {
           id: data.user.id,
           email: data.user.email!,
-          created_at: data.user.created_at
+          created_at: data.user.created_at,
+          user_metadata: data.user.user_metadata
         } : null,
         error: null 
       };
@@ -69,7 +71,8 @@ export class AuthService {
       return {
         id: user.id,
         email: user.email!,
-        created_at: user.created_at
+        created_at: user.created_at,
+        user_metadata: user.user_metadata
       };
     } catch (error) {
       console.error('Error getting current user:', error);
@@ -94,7 +97,8 @@ export class AuthService {
       const user = session?.user ? {
         id: session.user.id,
         email: session.user.email!,
-        created_at: session.user.created_at
+        created_at: session.user.created_at,
+        user_metadata: session.user.user_metadata
       } : null;
       
       callback(user);

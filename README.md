@@ -1,312 +1,251 @@
-# Sistema Web de Gestión Senda del Colibrí
+# Sistema de Gestión Senda del Colibrí
 
-Un sistema web completo para la gestión de clientes, eventos, referidos y asistencias de meditación, desarrollado con React + TypeScript + Supabase.
+Sistema web completo para la gestión de un centro de meditación, desarrollado con React, TypeScript, Vite y Supabase.
 
-## 🚀 Características
+## 🌟 Características
 
-- **Gestión de Clientes**: Registro y búsqueda de clientes con seguimiento automático de visitas y montos
+- **Gestión de Clientes**: Registro, búsqueda y actualización de información de clientes
 - **Gestión de Eventos**: Creación y administración de eventos de meditación
-- **Sistema de Referidos**: Seguimiento de referidos entre clientes
-- **Registro de Asistencias**: Control de asistencia a eventos con actualización automática de estadísticas
+- **Sistema de Referidos**: Seguimiento de referencias entre clientes
+- **Control de Asistencias**: Registro de asistencia a eventos con montos
 - **Dashboard Interactivo**: Estadísticas en tiempo real y navegación intuitiva
 - **Autenticación Segura**: Sistema de login con Supabase Auth
-- **Diseño Responsivo**: Interfaz optimizada para dispositivos móviles y desktop
+- **Diseño Responsivo**: Interfaz optimizada para móviles y escritorio
 
-## 🛠️ Stack Tecnológico
+## 🛠️ Tecnologías
 
-- **Frontend**: React 18 + TypeScript + Vite
-- **UI Framework**: TailwindCSS
-- **Backend**: Supabase (PostgreSQL + API REST automática)
+- **Frontend**: React 18, TypeScript, Vite
+- **Estilos**: TailwindCSS con tema personalizado
+- **Base de Datos**: Supabase (PostgreSQL)
 - **Autenticación**: Supabase Auth
-- **Gestión de Estado**: React Query (@tanstack/react-query)
-- **Routing**: React Router DOM v6
+- **Estado**: React Query para manejo de estado del servidor
+- **Navegación**: React Router DOM v6
+- **Iconos**: Lucide React
 - **Notificaciones**: React Toastify
-- **Iconografía**: Lucide React
 
-## 📋 Requisitos Previos
+## 📊 Esquema de Base de Datos
 
-- Node.js 18+ 
-- npm o yarn
-- Cuenta de Supabase
+### Estructura de IDs
+- **Clientes**: IDs numéricos de 6 dígitos (comenzando en 100000)
+- **Eventos**: IDs numéricos comenzando en 1
+- **Referidos**: IDs numéricos secuenciales desde 1
+- **Asistencias**: IDs numéricos secuenciales desde 1
 
-## 🔧 Instalación y Configuración
+### Tablas
 
-### 1. Clonar el repositorio
-
-```bash
-git clone <repository-url>
-cd sdc-system
-```
-
-### 2. Instalar dependencias
-
-```bash
-npm install
-```
-
-### 3. Configurar Supabase
-
-#### 3.1 Crear proyecto en Supabase
-1. Ve a [Supabase](https://supabase.com) y crea un nuevo proyecto
-2. Anota la URL del proyecto y la clave anónima
-
-#### 3.2 Configurar base de datos
-Ejecuta el siguiente SQL en el editor SQL de Supabase:
-
+#### Clientes
 ```sql
--- Tabla Clientes
 CREATE TABLE clientes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id INTEGER PRIMARY KEY DEFAULT nextval('clientes_id_seq'), -- 6 dígitos: 100000+
   nombre VARCHAR(100) NOT NULL,
   apellidos VARCHAR(200) NOT NULL,
   celular VARCHAR(15),
   comentarios TEXT,
-  visitas INTEGER DEFAULT 0 CHECK (visitas >= 0),
-  monto_acumulado DECIMAL(10,2) DEFAULT 0 CHECK (monto_acumulado >= 0),
+  visitas INTEGER DEFAULT 0, -- Calculado automáticamente
+  monto_acumulado DECIMAL(10,2) DEFAULT 0, -- Calculado automáticamente
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );
+```
 
--- Tabla Eventos
+#### Eventos
+```sql
 CREATE TABLE eventos (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id INTEGER PRIMARY KEY DEFAULT nextval('eventos_id_seq'), -- Comenzando en 1
   nombre VARCHAR(200) NOT NULL,
   ubicacion VARCHAR(300) NOT NULL,
-  gasto DECIMAL(10,2) DEFAULT 0 CHECK (gasto >= 0),
-  total_cobrado DECIMAL(10,2) DEFAULT 0 CHECK (total_cobrado >= 0),
-  cantidad_personas INTEGER DEFAULT 0 CHECK (cantidad_personas >= 0),
+  gasto DECIMAL(10,2) DEFAULT 0,
+  total_cobrado DECIMAL(10,2) DEFAULT 0, -- Calculado automáticamente
+  cantidad_personas INTEGER DEFAULT 0, -- Calculado automáticamente
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );
+```
 
--- Tabla Referidos
+#### Referidos
+```sql
 CREATE TABLE referidos (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  cliente_id UUID REFERENCES clientes(id) NOT NULL,
-  referido_id UUID REFERENCES clientes(id) NOT NULL,
+  id INTEGER PRIMARY KEY DEFAULT nextval('referidos_id_seq'),
+  cliente_id INTEGER REFERENCES clientes(id) NOT NULL,
+  referido_id INTEGER REFERENCES clientes(id) NOT NULL,
   created_at TIMESTAMP DEFAULT NOW(),
   UNIQUE(cliente_id, referido_id),
   CHECK (cliente_id != referido_id)
 );
+```
 
--- Tabla Asistencias
+#### Asistencias
+```sql
 CREATE TABLE asistencias (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  cliente_id UUID REFERENCES clientes(id) NOT NULL,
-  evento_id UUID REFERENCES eventos(id) NOT NULL,
-  monto_pagado DECIMAL(10,2) NOT NULL CHECK (monto_pagado >= 0),
+  id INTEGER PRIMARY KEY DEFAULT nextval('asistencias_id_seq'),
+  cliente_id INTEGER REFERENCES clientes(id) NOT NULL,
+  evento_id INTEGER REFERENCES eventos(id) NOT NULL,
+  monto_pagado DECIMAL(10,2) NOT NULL,
   created_at TIMESTAMP DEFAULT NOW(),
   UNIQUE(cliente_id, evento_id)
 );
-
--- Función para actualizar updated_at
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- Triggers para updated_at
-CREATE TRIGGER update_clientes_updated_at 
-    BEFORE UPDATE ON clientes 
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_eventos_updated_at 
-    BEFORE UPDATE ON eventos 
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- Función para actualizar estadísticas de cliente
-CREATE OR REPLACE FUNCTION update_cliente_stats()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF TG_OP = 'INSERT' THEN
-        UPDATE clientes 
-        SET 
-            visitas = visitas + 1,
-            monto_acumulado = monto_acumulado + NEW.monto_pagado
-        WHERE id = NEW.cliente_id;
-        RETURN NEW;
-    END IF;
-    RETURN NULL;
-END;
-$$ language 'plpgsql';
-
--- Función para actualizar estadísticas de evento
-CREATE OR REPLACE FUNCTION update_evento_stats()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF TG_OP = 'INSERT' THEN
-        UPDATE eventos 
-        SET 
-            cantidad_personas = cantidad_personas + 1,
-            total_cobrado = total_cobrado + NEW.monto_pagado
-        WHERE id = NEW.evento_id;
-        RETURN NEW;
-    END IF;
-    RETURN NULL;
-END;
-$$ language 'plpgsql';
-
--- Triggers para actualización automática
-CREATE TRIGGER trigger_update_cliente_stats
-    AFTER INSERT ON asistencias
-    FOR EACH ROW EXECUTE FUNCTION update_cliente_stats();
-
-CREATE TRIGGER trigger_update_evento_stats
-    AFTER INSERT ON asistencias
-    FOR EACH ROW EXECUTE FUNCTION update_evento_stats();
 ```
 
-#### 3.3 Configurar Row Level Security (RLS)
-```sql
--- Habilitar RLS en todas las tablas
-ALTER TABLE clientes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE eventos ENABLE ROW LEVEL SECURITY;
-ALTER TABLE referidos ENABLE ROW LEVEL SECURITY;
-ALTER TABLE asistencias ENABLE ROW LEVEL SECURITY;
+## 🚀 Instalación y Configuración
 
--- Políticas para usuarios autenticados
-CREATE POLICY "Allow all operations for authenticated users" ON clientes
-    FOR ALL USING (auth.role() = 'authenticated');
+### Prerrequisitos
+- Node.js 18 o superior
+- npm o yarn
+- Cuenta de Supabase
 
-CREATE POLICY "Allow all operations for authenticated users" ON eventos
-    FOR ALL USING (auth.role() = 'authenticated');
+### Pasos de Instalación
 
-CREATE POLICY "Allow all operations for authenticated users" ON referidos
-    FOR ALL USING (auth.role() = 'authenticated');
-
-CREATE POLICY "Allow all operations for authenticated users" ON asistencias
-    FOR ALL USING (auth.role() = 'authenticated');
-```
-
-### 4. Configurar variables de entorno
-
-Copia el archivo de ejemplo y configura tus variables:
-
+1. **Clonar el repositorio**
 ```bash
-cp env.example .env
+git clone <url-del-repositorio>
+cd SDC
 ```
 
-Edita el archivo `.env` con tus credenciales de Supabase:
+2. **Instalar dependencias**
+```bash
+npm install
+```
 
+3. **Configurar variables de entorno**
+```bash
+cp env.example .env.local
+```
+
+Editar `.env.local` con tus credenciales de Supabase:
 ```env
-VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
-VITE_SUPABASE_ANON_KEY=tu_clave_anonima
+VITE_SUPABASE_URL=tu_supabase_url
+VITE_SUPABASE_ANON_KEY=tu_supabase_anon_key
 ```
 
-### 5. Ejecutar la aplicación
+4. **Configurar la base de datos**
+- Crear un nuevo proyecto en [Supabase](https://supabase.com)
+- Ejecutar el script `supabase-setup.sql` en el SQL Editor de Supabase
+- Esto creará todas las tablas, triggers, índices y políticas de seguridad
 
+5. **Ejecutar en desarrollo**
 ```bash
 npm run dev
 ```
 
-La aplicación estará disponible en `http://localhost:5173`
-
-## 👤 Primer Usuario
-
-Para crear el primer usuario administrador, ve a la sección de Authentication en tu dashboard de Supabase y crea un usuario manualmente, o usa el signup en la aplicación (aunque esté comentado en el código de producción).
+6. **Construir para producción**
+```bash
+npm run build
+```
 
 ## 📁 Estructura del Proyecto
 
 ```
 src/
 ├── components/           # Componentes reutilizables
-│   ├── ui/              # Componentes UI base
-│   ├── Layout.tsx       # Layout principal
+│   ├── ui/              # Componentes base (Button, Input, Card, etc.)
+│   ├── Layout.tsx       # Layout principal con navegación
 │   └── ProtectedRoute.tsx
 ├── pages/               # Páginas de la aplicación
 │   ├── clientes/        # Módulo de clientes
 │   ├── eventos/         # Módulo de eventos
 │   ├── referidos/       # Módulo de referidos
 │   ├── asistencias/     # Módulo de asistencias
-│   ├── Home.tsx         # Dashboard
-│   └── Login.tsx        # Autenticación
-├── services/            # Servicios de API
-│   ├── supabase.ts      # Cliente Supabase
-│   ├── api.ts           # Servicios de entidades
-│   └── authService.ts   # Servicio de autenticación
-├── types/               # Tipos TypeScript
-├── utils/               # Utilidades
-└── hooks/               # Custom hooks
+│   ├── Home.tsx         # Dashboard principal
+│   └── Login.tsx        # Página de login
+├── services/            # Servicios y API
+│   ├── supabase.ts      # Cliente de Supabase
+│   ├── authService.ts   # Servicios de autenticación
+│   └── api.ts           # Servicios de API para cada módulo
+├── hooks/               # Hooks personalizados
+├── types/               # Definiciones de tipos TypeScript
+├── utils/               # Utilidades y helpers
+└── styles/              # Estilos globales
 ```
 
-## 🔒 Funcionalidades de Seguridad
+## 🔧 Configuración de Desarrollo
 
-- **Autenticación obligatoria**: Todas las rutas están protegidas
-- **Row Level Security**: Implementado en Supabase
-- **Validaciones**: Frontend y backend
-- **Sanitización**: Datos limpios antes de envío
+### Scripts Disponibles
+- `npm run dev` - Servidor de desarrollo
+- `npm run build` - Construcción para producción
+- `npm run preview` - Vista previa de la construcción
+- `npm run lint` - Verificación de código con ESLint
 
-## 🎯 Funcionalidades por Módulo
+### Arquitectura de Componentes
+El proyecto sigue una arquitectura modular basada en:
+- **Componentes UI reutilizables** en `components/ui/`
+- **Páginas específicas** organizadas por módulo
+- **Servicios centralizados** para manejo de datos
+- **Hooks personalizados** para lógica compartida
+- **Tipos TypeScript** para seguridad de tipos
+
+## 📋 Reglas de Negocio
 
 ### Clientes
-- ✅ Alta de clientes con validaciones
-- ✅ Búsqueda y filtrado
-- ✅ Edición de datos básicos
-- ❌ Eliminación (no permitida)
-- 📊 Campos calculados automáticos
+- ✅ Crear, leer, actualizar
+- ❌ No se pueden eliminar
+- 🔄 Visitas y monto acumulado se calculan automáticamente
 
 ### Eventos
-- ✅ Creación de eventos
-- ✅ Gestión y consulta
-- ✅ Edición de información
-- ❌ Eliminación (no permitida)
-- 📊 Estadísticas automáticas
+- ✅ Crear, leer, actualizar
+- ❌ No se pueden eliminar
+- 🔄 Total cobrado y cantidad de personas se calculan automáticamente
 
 ### Referidos
-- ✅ Registro de referidos
-- ✅ Consulta por cliente
-- ❌ Modificación/eliminación
-- 🔒 Validaciones de integridad
+- ✅ Crear, leer
+- ❌ No se pueden actualizar ni eliminar
+- 🚫 Un cliente no puede referirse a sí mismo
+- 🔒 Relación única entre cliente y referido
 
 ### Asistencias
-- ✅ Registro de asistencia
-- ❌ Modificación/eliminación
-- ⚡ Actualización automática de estadísticas
-- 🔒 Una asistencia por cliente/evento
+- ✅ Solo crear
+- ❌ No se pueden actualizar ni eliminar
+- 🔒 Una asistencia por cliente por evento
+- 🔄 Actualiza automáticamente estadísticas de cliente y evento
 
-## 🚀 Deployment
+## 🎨 Diseño y UX
+
+- **Tema de colores**: Inspirado en la meditación con tonos tierra y verdes
+- **Responsive**: Diseño mobile-first con TailwindCSS
+- **Accesibilidad**: Componentes accesibles con ARIA labels
+- **Animaciones**: Transiciones suaves y feedback visual
+- **Iconografía**: Lucide React para iconos consistentes
+
+## 🔒 Seguridad
+
+- **Row Level Security (RLS)** habilitado en todas las tablas
+- **Autenticación requerida** para todas las operaciones
+- **Validación de datos** en frontend y backend
+- **Sanitización de inputs** para prevenir inyecciones
+- **Políticas de acceso** configuradas en Supabase
+
+## 🚀 Despliegue
 
 ### Vercel (Recomendado)
-```bash
-npm run build
-# Subir carpeta dist/ a Vercel
-```
+1. Conectar repositorio a Vercel
+2. Configurar variables de entorno en Vercel
+3. Deploy automático en cada push
 
 ### Netlify
+1. Conectar repositorio a Netlify
+2. Configurar variables de entorno
+3. Deploy automático
+
+### Manual
 ```bash
 npm run build
-# Subir carpeta dist/ a Netlify
+# Subir carpeta dist/ a tu servidor web
 ```
 
-## 🔧 Scripts Disponibles
+## 🤝 Contribución
 
-- `npm run dev` - Servidor de desarrollo
-- `npm run build` - Build de producción
-- `npm run preview` - Preview del build
-- `npm run lint` - Linter de código
-
-## 🐛 Solución de Problemas
-
-### Error de conexión a Supabase
-- Verifica las variables de entorno
-- Confirma que las URLs sean correctas
-- Revisa que RLS esté configurado
-
-### Problemas de autenticación
-- Verifica que el usuario exista en Supabase Auth
-- Confirma las políticas de RLS
-- Revisa la configuración de Auth en Supabase
+1. Fork del proyecto
+2. Crear rama para feature (`git checkout -b feature/AmazingFeature`)
+3. Commit de cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abrir Pull Request
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT.
+Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 
-## 🤝 Contribuciones
+## 📞 Soporte
 
-Las contribuciones son bienvenidas. Por favor, abre un issue primero para discutir los cambios propuestos.
+Para soporte o preguntas sobre el sistema, contactar al equipo de desarrollo.
 
 ---
 

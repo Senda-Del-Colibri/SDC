@@ -98,6 +98,12 @@ export interface User {
   id: string;
   email: string;
   created_at: string;
+  user_metadata?: {
+    display_name?: string;
+    full_name?: string;
+    avatar_url?: string;
+    [key: string]: unknown;
+  };
 }
 
 export interface AuthState {

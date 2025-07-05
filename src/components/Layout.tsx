@@ -37,6 +37,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
+  // Función para obtener el nombre a mostrar
+  const getDisplayName = () => {
+    return user?.user_metadata?.display_name || 
+           user?.email?.split('@')[0] || 
+           'Usuario';
+  };
+
   const handleLogout = async () => {
     const { error } = await AuthService.signOut();
     if (error) {
@@ -66,7 +73,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-lg">S</span>
                 </div>
-                <span className="text-xl font-bold text-gray-900">Senda del Colibrí</span>
+                <span className="text-xl font-bold text-gray-900"> SDC </span>
               </Link>
             </div>
 
@@ -94,7 +101,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             {/* User Menu */}
             <div className="flex items-center space-x-4">
               <div className="hidden md:flex items-center space-x-2">
-                <span className="text-sm text-gray-600">Hola, {user?.email}</span>
+                <span className="text-sm text-gray-600">
+                  Hola, {getDisplayName()}
+                </span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -140,7 +149,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               })}
               <div className="border-t border-gray-200 pt-2 mt-2">
                 <div className="px-3 py-2 text-sm text-gray-600">
-                  {user?.email}
+                  <div className="font-medium">
+                    {getDisplayName()}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {user?.email}
+                  </div>
                 </div>
                 <Button
                   variant="ghost"
