@@ -33,10 +33,19 @@ jobs:
       run: npm ci
     
     - name: Create .env file
-      run: echo "${{ secrets.VITE_ENV_VARS }}" > .env
+      run: |
+        echo "${{ secrets.VITE_ENV_VARS }}" > .env
+        echo "Created .env file with content:"
+        cat .env
+        echo "Environment variables available:"
+        env | grep VITE_ || echo "No VITE_ variables found"
     
     - name: Build
-      run: npm run build
+      run: |
+        echo "Building application..."
+        npm run build
+        echo "Build completed. Checking dist directory:"
+        ls -la dist/
       env:
         NODE_ENV: production
     
