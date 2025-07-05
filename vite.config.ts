@@ -22,10 +22,12 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    host: true
+    host: true, // Permite acceso desde 192.168.x.x
+    open: false
   },
   preview: {
     port: 4173,
-    host: true
+    host: true, // Permite acceso desde 192.168.x.x
+    open: false
   }
 })

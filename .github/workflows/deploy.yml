@@ -35,17 +35,22 @@ jobs:
     - name: Create .env file
       run: |
         echo "${{ secrets.VITE_ENV_VARS }}" > .env
-        echo "Created .env file with content:"
-        cat .env
+        echo "Created .env file"
+        echo "Checking if .env file exists:"
+        ls -la .env
         echo "Environment variables available:"
-        env | grep VITE_ || echo "No VITE_ variables found"
+        env | grep VITE_ || echo "No VITE_ variables found in environment"
     
     - name: Build
       run: |
         echo "Building application..."
+        echo "Checking .env file before build:"
+        ls -la .env || echo ".env file not found"
         npm run build
         echo "Build completed. Checking dist directory:"
         ls -la dist/
+        echo "Checking if index.html exists:"
+        ls -la dist/index.html || echo "index.html not found in dist"
       env:
         NODE_ENV: production
     
