@@ -10,18 +10,23 @@ import {
   Calendar,
   DollarSign,
   Users,
-  RefreshCw
+  RefreshCw,
+  Download
 } from 'lucide-react';
 import { clienteService } from '../../services/api';
-import { Button, Input, Card, LoadingSpinner } from '../../components/ui';
+import { Button, Input, Card, LoadingSpinner, Modal } from '../../components/ui';
+import { ClienteDetails } from '../../components/ClienteDetails';
 import type { Cliente } from '../../types';
 import { toast } from 'react-toastify';
+import { exportClientesToCSV } from '../../utils/exportUtils';
 
 export const BusquedaClientes: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<Cliente[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [filters, setFilters] = useState({
     minVisitas: '',
     maxVisitas: '',
@@ -117,6 +122,33 @@ export const BusquedaClientes: React.FC = () => {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  // Manejar vista de detalles
+  const handleViewDetails = (cliente: Cliente) => {
+    setSelectedCliente(cliente);
+    setIsModalOpen(true);
+  };
+
+  // Cerrar modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedCliente(null);
+  };
+
+  // Exportar resultados a CSV
+  const handleExportCSV = () => {
+    if (clientesToShow.length === 0) {
+      toast.error('No hay datos para exportar');
+      return;
+    }
+    
+    const filename = searchQuery 
+      ? `busqueda_clientes_${searchQuery.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`
+      : `todos_los_clientes_${new Date().toISOString().split('T')[0]}.csv`;
+    
+    exportClientesToCSV(clientesToShow, filename);
+    toast.success(`Exportados ${clientesToShow.length} clientes a CSV`);
   };
 
   return (
@@ -276,6 +308,16 @@ export const BusquedaClientes: React.FC = () => {
             </span>
           )}
         </div>
+        {clientesToShow.length > 0 && (
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={Download}
+            onClick={handleExportCSV}
+          >
+            Exportar CSV
+          </Button>
+        )}
       </div>
 
       {/* Tabla de resultados */}
@@ -370,10 +412,7 @@ export const BusquedaClientes: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           icon={Eye}
-                          onClick={() => {
-                            // TODO: Implementar vista de detalles
-                            toast.info('Vista de detalles próximamente');
-                          }}
+                          onClick={() => handleViewDetails(cliente)}
                         >
                           Ver
                         </Button>
@@ -395,8 +434,18 @@ export const BusquedaClientes: React.FC = () => {
               </tbody>
             </table>
           </div>
-        )}
-      </Card>
-    </div>
-  );
-}; 
+                  )}
+        </Card>
+
+        {/* Modal de detalles del cliente */}
+        <Modal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          title={selectedCliente ? `${selectedCliente.nombre} ${selectedCliente.apellidos}` : ''}
+          size="lg"
+        >
+          {selectedCliente && <ClienteDetails cliente={selectedCliente} />}
+        </Modal>
+      </div>
+    );
+  }; 
