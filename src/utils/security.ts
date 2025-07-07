@@ -1,22 +1,15 @@
 // Utilidades de seguridad para SDC
+import sanitizeHtml from 'sanitize-html';
 
 /**
  * Sanitiza input de usuario para prevenir XSS
  */
 export const sanitizeInput = (input: string): string => {
-  let previous;
-  do {
-    previous = input;
-    input = input
-      .replace(/[<>]/g, '') // Remover tags HTML básicos
-      .replace(/javascript:/gi, '') // Remover javascript: URLs
-      .replace(/data:/gi, '') // Remover data: URLs
-      .replace(/vbscript:/gi, '') // Remover vbscript: URLs
-      .replace(/on\w+=[^>]*/gi, '') // Remover atributos event handlers (más seguro)
-      .replace(/['"]/g, '') // Remover comillas peligrosas
-      .trim();
-  } while (input !== previous);
-  return input;
+  return sanitizeHtml(input, {
+    allowedTags: [],
+    allowedAttributes: {},
+    disallowedTagsMode: 'discard',
+  }).trim();
 };
 
 /**
