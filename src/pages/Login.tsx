@@ -5,6 +5,7 @@ import { AuthService } from '../services/authService';
 import { useAuth } from '../hooks/useAuth';
 import { Button, Input, Card, CardBody } from '../components/ui';
 import { toast } from 'react-toastify';
+import { sanitizeInput, validateEmail, checkRateLimit } from '../utils/security';
 
 export const Login: React.FC = () => {
   const { user, isLoading } = useAuth();
@@ -25,15 +26,19 @@ export const Login: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.email.trim()) {
+    // Sanitizar y validar email
+    const cleanEmail = sanitizeInput(formData.email.trim());
+    if (!cleanEmail) {
       newErrors.email = 'El email es requerido';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (!validateEmail(cleanEmail)) {
       newErrors.email = 'El email no es válido';
     }
 
-    if (!formData.password.trim()) {
+    // Validar contraseña
+    const cleanPassword = sanitizeInput(formData.password);
+    if (!cleanPassword) {
       newErrors.password = 'La contraseña es requerida';
-    } else if (formData.password.length < 6) {
+    } else if (cleanPassword.length < 6) {
       newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
     }
 
@@ -45,6 +50,12 @@ export const Login: React.FC = () => {
     e.preventDefault();
     
     if (!validateForm()) return;
+
+    // Rate limiting para prevenir ataques de fuerza bruta
+    if (!checkRateLimit('login', 5, 300000)) { // 5 intentos por 5 minutos
+      toast.error('Demasiados intentos de login. Espera 5 minutos.');
+      return;
+    }
 
     setIsSubmitting(true);
     

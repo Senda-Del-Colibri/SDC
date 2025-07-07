@@ -19,6 +19,7 @@ import { ClienteDetails } from '../../components/ClienteDetails';
 import type { Cliente } from '../../types';
 import { toast } from 'react-toastify';
 import { exportClientesToCSV } from '../../utils/exportUtils';
+import { sanitizeInput } from '../../utils/security';
 
 export const BusquedaClientes: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,7 +46,8 @@ export const BusquedaClientes: React.FC = () => {
 
   // Función para realizar búsqueda
   const handleSearch = async (query: string) => {
-    if (!query.trim()) {
+    const cleanQuery = sanitizeInput(query.trim());
+    if (!cleanQuery) {
       setSearchResults([]);
       setIsSearching(false);
       return;
@@ -53,7 +55,7 @@ export const BusquedaClientes: React.FC = () => {
 
     setIsSearching(true);
     try {
-      const results = await clienteService.search(query);
+      const results = await clienteService.search(cleanQuery);
       setSearchResults(results);
     } catch (error) {
       console.error('Error en búsqueda:', error);

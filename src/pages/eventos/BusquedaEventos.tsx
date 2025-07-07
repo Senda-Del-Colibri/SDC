@@ -20,6 +20,7 @@ import { EventoDetails } from '../../components/EventoDetails';
 import type { Evento } from '../../types';
 import { toast } from 'react-toastify';
 import { exportEventosToCSV } from '../../utils/exportUtils';
+import { sanitizeInput } from '../../utils/security';
 
 export const BusquedaEventos: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,7 +49,8 @@ export const BusquedaEventos: React.FC = () => {
 
   // Función para realizar búsqueda
   const handleSearch = async (query: string) => {
-    if (!query.trim()) {
+    const cleanQuery = sanitizeInput(query.trim());
+    if (!cleanQuery) {
       setSearchResults([]);
       setIsSearching(false);
       return;
@@ -56,7 +58,7 @@ export const BusquedaEventos: React.FC = () => {
 
     setIsSearching(true);
     try {
-      const results = await eventoService.search(query);
+      const results = await eventoService.search(cleanQuery);
       setSearchResults(results);
     } catch (error) {
       console.error('Error en búsqueda:', error);
