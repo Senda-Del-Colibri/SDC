@@ -141,3 +141,5 @@ Para soporte técnico o preguntas sobre el sistema, contacta al administrador de
 ---
 
 **Desarrollado con ❤️ para Senda del Colibrí**
+
+🧪 **Test de Branch Protection Rules** - Esta línea fue agregada para probar las reglas de protección.

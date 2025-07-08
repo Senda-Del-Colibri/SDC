@@ -17,6 +17,7 @@ import { asistenciaService, clienteService, eventoService } from '../../services
 import { Button, Input, Card, CardHeader, CardBody } from '../../components/ui';
 import type { AsistenciaForm, Cliente, Evento } from '../../types';
 import { toast } from 'react-toastify';
+import { sanitizeInput } from '../../utils/security';
 
 interface FormErrors {
   cliente_id?: string;
@@ -56,19 +57,21 @@ export const AltaAsistencias: React.FC = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Filtrar clientes por búsqueda
-  const filteredClientes = allClientes.filter(cliente =>
-    `${cliente.nombre} ${cliente.apellidos}`.toLowerCase().includes(clienteSearch.toLowerCase()) ||
-    cliente.id.toString().includes(clienteSearch) ||
-    (cliente.celular && cliente.celular.includes(clienteSearch))
-  );
+  // Filtrar clientes por búsqueda (con sanitización)
+  const filteredClientes = allClientes.filter(cliente => {
+    const cleanSearch = sanitizeInput(clienteSearch.toLowerCase());
+    return `${cliente.nombre} ${cliente.apellidos}`.toLowerCase().includes(cleanSearch) ||
+           cliente.id.toString().includes(cleanSearch) ||
+           (cliente.celular && cliente.celular.includes(cleanSearch));
+  });
 
-  // Filtrar eventos por búsqueda
-  const filteredEventos = allEventos.filter(evento =>
-    evento.nombre.toLowerCase().includes(eventoSearch.toLowerCase()) ||
-    evento.ubicacion.toLowerCase().includes(eventoSearch.toLowerCase()) ||
-    evento.id.toString().includes(eventoSearch)
-  );
+  // Filtrar eventos por búsqueda (con sanitización)
+  const filteredEventos = allEventos.filter(evento => {
+    const cleanSearch = sanitizeInput(eventoSearch.toLowerCase());
+    return evento.nombre.toLowerCase().includes(cleanSearch) ||
+           evento.ubicacion.toLowerCase().includes(cleanSearch) ||
+           evento.id.toString().includes(cleanSearch);
+  });
 
   // Mutation para crear asistencia
   const createAsistenciaMutation = useMutation({
