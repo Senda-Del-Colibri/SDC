@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run ESLint
+      run: npm run lint
+    
+    - name: Type check
+      run: npx tsc --noEmit
+    
+    - name: Build test
+      run: npm run build
+      env:
+        VITE_SUPABASE_URL: "https://test.supabase.co"
+        VITE_SUPABASE_ANON_KEY: "test-key"
+    
+    - name: Check bundle size
+      run: |
+        npm run build
+        echo "📦 Bundle sizes:"
+        ls -lh dist/assets/
+        
+    - name: Validate HTML
+      run: |
+        if [ -f "dist/index.html" ]; then
+          echo "✅ index.html generated successfully"
+          grep -q "SDC" dist/index.html && echo "✅ Title contains SDC"
+        else
+          echo "❌ index.html not found"
+          exit 1
+        fi 
