@@ -37,12 +37,28 @@ export interface Referido {
   created_at: string;
 }
 
+// Apartado
+export interface Apartado {
+  id: number;
+  cliente_id: number;
+  evento_id: number;
+  monto_anticipo: number;
+  monto_total_esperado: number;
+  estado: 'apartado' | 'confirmado' | 'cancelado';
+  notas?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // Asistencia
 export interface Asistencia {
   id: number;
   cliente_id: number;
   evento_id: number;
   monto_pagado: number;
+  apartado_id?: number;
+  monto_anticipo: number;
+  monto_restante: number;
   created_at: string;
 }
 
@@ -66,10 +82,21 @@ export interface ReferidoForm {
   referido_id: number;
 }
 
+export interface ApartadoForm {
+  cliente_id: number;
+  evento_id: number;
+  monto_anticipo: number;
+  monto_total_esperado: number;
+  notas?: string;
+}
+
 export interface AsistenciaForm {
   cliente_id: number;
   evento_id: number;
   monto_pagado: number;
+  apartado_id?: number;
+  monto_anticipo?: number;
+  monto_restante?: number;
 }
 
 // Tipos para respuestas de API

@@ -25,6 +25,8 @@ import { ConsultaReferidos } from './pages/referidos/ConsultaReferidos';
 
 // Asistencia pages
 import { AltaAsistencias } from './pages/asistencias/AltaAsistencias';
+import { ApartarLugar } from './pages/asistencias/ApartarLugar';
+import { ConfirmarAsistencia } from './pages/asistencias/ConfirmarAsistencia';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -110,6 +112,22 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <AltaAsistencias />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/asistencias/apartar" element={
+              <ProtectedRoute>
+                <Layout>
+                  <ApartarLugar />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/asistencias/confirmar" element={
+              <ProtectedRoute>
+                <Layout>
+                  <ConfirmarAsistencia />
                 </Layout>
               </ProtectedRoute>
             } />

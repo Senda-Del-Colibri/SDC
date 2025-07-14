@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Home, 
@@ -58,7 +58,15 @@ const navigationItems: NavigationItem[] = [
       { name: 'Consulta Referidos', href: '/referidos/consulta', icon: Users },
     ]
   },
-  { name: 'Registrar Asistencia', href: '/asistencias/alta', icon: CheckCircle },
+  {
+    name: 'Asistencias',
+    icon: CheckCircle,
+    children: [
+      { name: 'Apartar Lugar', href: '/asistencias/apartar', icon: Calendar },
+      { name: 'Confirmar Asistencia', href: '/asistencias/confirmar', icon: CheckCircle },
+      { name: 'Registro Directo', href: '/asistencias/alta', icon: User },
+    ]
+  },
 ];
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
@@ -86,19 +94,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     }
   };
 
-  const isActivePath = (path: string) => {
+  const isActivePath = useCallback((path: string) => {
     if (path === '/') {
       return location.pathname === '/';
     }
     return location.pathname.startsWith(path);
-  };
+  }, [location.pathname]);
 
-  const isGroupActive = (item: NavigationItem) => {
+  const isGroupActive = useCallback((item: NavigationItem) => {
     if (item.href) {
       return isActivePath(item.href);
     }
     return item.children?.some(child => child.href && isActivePath(child.href)) || false;
-  };
+  }, [isActivePath]);
 
   const toggleGroup = (groupName: string) => {
     setExpandedGroups(prev => 
@@ -115,7 +123,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         setExpandedGroups(prev => [...prev, item.name]);
       }
     });
-  }, [location.pathname]);
+  }, [location.pathname, expandedGroups, isGroupActive]);
 
   const getDefaultRouteForGroup = (groupName: string) => {
     switch (groupName) {
@@ -125,6 +133,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         return '/eventos/busqueda';
       case 'Referidos':
         return '/referidos/consulta';
+      case 'Asistencias':
+        return '/asistencias/confirmar';
       default:
         return '/';
     }
@@ -236,10 +246,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 onError={(e) => {
                   // Fallback si no se encuentra la imagen
                   e.currentTarget.style.display = 'none';
-                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                  if (fallback) {
+                    fallback.classList.remove('hidden');
+                    fallback.classList.add('flex');
+                  }
                 }}
               />
-              <div className="hidden w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+              <div className="hidden w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg items-center justify-center">
                 <span className="text-white font-bold text-lg">S</span>
               </div>
             </div>
@@ -323,10 +337,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     onError={(e) => {
                       // Fallback si no se encuentra la imagen
                       e.currentTarget.style.display = 'none';
-                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                      const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (fallback) {
+                        fallback.classList.remove('hidden');
+                        fallback.classList.add('flex');
+                      }
                     }}
                   />
-                  <div className="hidden w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+                  <div className="hidden w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg items-center justify-center">
                     <span className="text-white font-bold text-lg">S</span>
                   </div>
                 </div>
@@ -399,10 +417,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     onError={(e) => {
                       // Fallback si no se encuentra la imagen
                       e.currentTarget.style.display = 'none';
-                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                      const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (fallback) {
+                        fallback.classList.remove('hidden');
+                        fallback.classList.add('flex');
+                      }
                     }}
                   />
-                  <div className="hidden w-6 h-6 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+                  <div className="hidden w-6 h-6 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg items-center justify-center">
                     <span className="text-white font-bold text-sm">S</span>
                   </div>
                 </div>

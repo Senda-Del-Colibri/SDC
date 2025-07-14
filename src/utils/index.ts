@@ -82,4 +82,7 @@ export const isPositiveNumber = (value: string | number): boolean => {
 // Formatear número con separadores de miles
 export const formatNumber = (num: number): string => {
   return new Intl.NumberFormat('es-MX').format(num);
-}; 
+};
+
+// Exportar utilidades de manejo de errores
+export * from './errorHandler'; 
