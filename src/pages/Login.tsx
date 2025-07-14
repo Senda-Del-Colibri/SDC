@@ -101,8 +101,20 @@ export const Login: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl flex items-center justify-center mb-6">
-            <span className="text-white font-bold text-2xl">S</span>
+          <div className="mx-auto w-32 h-32 flex items-center justify-center mb-8">
+            <img 
+              src="/SDC/logo.png?v=1" 
+              alt="SDC Logo" 
+              className="w-32 h-32 object-contain"
+              onError={(e) => {
+                // Fallback si no se encuentra la imagen
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+            <div className="hidden mx-auto w-32 h-32 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl flex items-center justify-center">
+              <span className="text-white font-bold text-5xl">S</span>
+            </div>
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             Senda del Colibrí

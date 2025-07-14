@@ -12,7 +12,9 @@ import {
   Menu,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { AuthService } from '../services/authService';
@@ -23,14 +25,39 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-const navigationItems = [
+interface NavigationItem {
+  name: string;
+  href?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  children?: NavigationItem[];
+}
+
+const navigationItems: NavigationItem[] = [
   { name: 'Dashboard', href: '/', icon: Home },
-  { name: 'Alta Clientes', href: '/clientes/alta', icon: User },
-  { name: 'Búsqueda Clientes', href: '/clientes/busqueda', icon: Search },
-  { name: 'Alta Eventos', href: '/eventos/alta', icon: Calendar },
-  { name: 'Búsqueda Eventos', href: '/eventos/busqueda', icon: List },
-  { name: 'Alta Referidos', href: '/referidos/alta', icon: Users },
-  { name: 'Consulta Referidos', href: '/referidos/consulta', icon: Users },
+  {
+    name: 'Clientes',
+    icon: User,
+    children: [
+      { name: 'Alta Clientes', href: '/clientes/alta', icon: User },
+      { name: 'Búsqueda Clientes', href: '/clientes/busqueda', icon: Search },
+    ]
+  },
+  {
+    name: 'Eventos',
+    icon: Calendar,
+    children: [
+      { name: 'Alta Eventos', href: '/eventos/alta', icon: Calendar },
+      { name: 'Búsqueda Eventos', href: '/eventos/busqueda', icon: List },
+    ]
+  },
+  {
+    name: 'Referidos',
+    icon: Users,
+    children: [
+      { name: 'Alta Referidos', href: '/referidos/alta', icon: Users },
+      { name: 'Consulta Referidos', href: '/referidos/consulta', icon: Users },
+    ]
+  },
   { name: 'Registrar Asistencia', href: '/asistencias/alta', icon: CheckCircle },
 ];
 
@@ -40,6 +67,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [expandedGroups, setExpandedGroups] = React.useState<string[]>([]);
 
   // Función para obtener el nombre a mostrar
   const getDisplayName = () => {
@@ -65,6 +93,134 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     return location.pathname.startsWith(path);
   };
 
+  const isGroupActive = (item: NavigationItem) => {
+    if (item.href) {
+      return isActivePath(item.href);
+    }
+    return item.children?.some(child => child.href && isActivePath(child.href)) || false;
+  };
+
+  const toggleGroup = (groupName: string) => {
+    setExpandedGroups(prev => 
+      prev.includes(groupName) 
+        ? prev.filter(name => name !== groupName)
+        : [...prev, groupName]
+    );
+  };
+
+  // Auto-expandir grupos activos
+  React.useEffect(() => {
+    navigationItems.forEach(item => {
+      if (item.children && isGroupActive(item) && !expandedGroups.includes(item.name)) {
+        setExpandedGroups(prev => [...prev, item.name]);
+      }
+    });
+  }, [location.pathname]);
+
+  const getDefaultRouteForGroup = (groupName: string) => {
+    switch (groupName) {
+      case 'Clientes':
+        return '/clientes/busqueda';
+      case 'Eventos':
+        return '/eventos/busqueda';
+      case 'Referidos':
+        return '/referidos/consulta';
+      default:
+        return '/';
+    }
+  };
+
+  const handleGroupClick = (item: NavigationItem, isMobile: boolean) => {
+    if (!isSidebarOpen && !isMobile) {
+      // Si el sidebar está colapsado, navegar directamente a la página por defecto
+      const defaultRoute = getDefaultRouteForGroup(item.name);
+      navigate(defaultRoute);
+    } else {
+      // Si el sidebar está expandido, toggle el grupo
+      toggleGroup(item.name);
+    }
+  };
+
+  const renderNavigationItem = (item: NavigationItem, isMobile = false) => {
+    const Icon = item.icon;
+    const isActive = isGroupActive(item);
+    const isExpanded = expandedGroups.includes(item.name);
+
+    if (item.children) {
+      // Grupo con submenús
+      return (
+        <div key={item.name}>
+          <button
+            onClick={() => handleGroupClick(item, isMobile)}
+            className={`flex items-center w-full px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group ${
+              isActive
+                ? 'bg-primary-100 text-primary-700 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            } ${!isSidebarOpen && !isMobile && 'justify-center py-3'}`}
+            title={!isSidebarOpen && !isMobile ? `${item.name} - Ir a ${item.name === 'Referidos' ? 'Consulta' : 'Búsqueda'}` : undefined}
+          >
+            <Icon className={`${isSidebarOpen || isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'} ${(isSidebarOpen || isMobile) && 'mr-3'}`} />
+            {(isSidebarOpen || isMobile) && (
+              <>
+                <span className="truncate flex-1 text-left">{item.name}</span>
+                {isExpanded ? (
+                  <ChevronUp className="w-4 h-4 text-gray-400" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                )}
+              </>
+            )}
+          </button>
+          
+          {/* Submenús */}
+          {isExpanded && (isSidebarOpen || isMobile) && (
+            <div className="ml-6 mt-2 space-y-1">
+              {item.children.map((child) => {
+                const ChildIcon = child.icon;
+                const isChildActive = child.href ? isActivePath(child.href) : false;
+                return (
+                  <Link
+                    key={child.name}
+                    to={child.href!}
+                    className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                      isChildActive
+                        ? 'bg-primary-50 text-primary-700 border-l-2 border-primary-500'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                    onClick={() => isMobile && setIsMobileMenuOpen(false)}
+                  >
+                    <ChildIcon className={`w-4 h-4 mr-3 ${isChildActive ? 'text-primary-600' : 'text-gray-400'}`} />
+                    {child.name}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    } else {
+      // Elemento simple
+      return (
+        <Link
+          key={item.name}
+          to={item.href!}
+          className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group ${
+            isActive
+              ? 'bg-primary-100 text-primary-700 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+          } ${!isSidebarOpen && !isMobile && 'justify-center py-3'}`}
+          title={!isSidebarOpen && !isMobile ? item.name : undefined}
+          onClick={() => isMobile && setIsMobileMenuOpen(false)}
+        >
+          <Icon className={`${isSidebarOpen || isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'} ${(isSidebarOpen || isMobile) && 'mr-3'}`} />
+          {(isSidebarOpen || isMobile) && (
+            <span className="truncate">{item.name}</span>
+          )}
+        </Link>
+      );
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex">
       {/* Sidebar */}
@@ -72,8 +228,20 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Sidebar Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className={`flex items-center space-x-3 ${!isSidebarOpen && 'justify-center'}`}>
-            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">S</span>
+            <div className="w-8 h-8 flex items-center justify-center">
+              <img 
+                src="/SDC/logo.png?v=1" 
+                alt="SDC Logo" 
+                className="w-8 h-8 object-contain"
+                onError={(e) => {
+                  // Fallback si no se encuentra la imagen
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+              <div className="hidden w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">S</span>
+              </div>
             </div>
             {isSidebarOpen && (
               <span className="text-xl font-bold text-gray-900">SDC</span>
@@ -93,27 +261,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6 space-y-2">
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = isActivePath(item.href);
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group ${
-                  isActive
-                    ? 'bg-primary-100 text-primary-700 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                } ${!isSidebarOpen && 'justify-center py-3'}`}
-                title={!isSidebarOpen ? item.name : undefined}
-              >
-                <Icon className={`${isSidebarOpen ? 'w-5 h-5' : 'w-8 h-8'} ${isActive ? 'text-primary-600' : 'text-gray-500 group-hover:text-gray-700'} ${isSidebarOpen && 'mr-3'}`} />
-                {isSidebarOpen && (
-                  <span className="truncate">{item.name}</span>
-                )}
-              </Link>
-            );
-          })}
+          {navigationItems.map((item) => renderNavigationItem(item))}
         </nav>
 
         {/* User Section */}
@@ -167,8 +315,20 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             {/* Mobile Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">S</span>
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <img 
+                    src="/SDC/logo.png?v=1" 
+                    alt="SDC Logo" 
+                    className="w-8 h-8 object-contain"
+                    onError={(e) => {
+                      // Fallback si no se encuentra la imagen
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                  <div className="hidden w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">S</span>
+                  </div>
                 </div>
                 <span className="text-xl font-bold text-gray-900">SDC</span>
               </div>
@@ -182,25 +342,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
             {/* Mobile Navigation */}
             <nav className="flex-1 px-4 py-6 space-y-2">
-              {navigationItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = isActivePath(item.href);
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                      isActive
-                        ? 'bg-primary-100 text-primary-700 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    }`}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Icon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary-600' : 'text-gray-500'}`} />
-                    {item.name}
-                  </Link>
-                );
-              })}
+              {navigationItems.map((item) => renderNavigationItem(item, true))}
             </nav>
 
             {/* Mobile User Section */}
@@ -249,8 +391,20 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <Menu className="w-5 h-5 text-gray-600" />
               </button>
               <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">S</span>
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <img 
+                    src="/SDC/logo.png?v=1" 
+                    alt="SDC Logo" 
+                    className="w-6 h-6 object-contain"
+                    onError={(e) => {
+                      // Fallback si no se encuentra la imagen
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                  <div className="hidden w-6 h-6 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">S</span>
+                  </div>
                 </div>
                 <span className="text-lg font-bold text-gray-900">SDC</span>
               </div>
