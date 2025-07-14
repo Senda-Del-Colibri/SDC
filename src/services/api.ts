@@ -140,6 +140,36 @@ export const eventoService = {
     
     if (error) throw error;
     return data || [];
+  },
+
+  // Obtener próximo evento
+  async getProximoEvento(): Promise<Evento | null> {
+    const hoy = new Date().toISOString().split('T')[0];
+    const { data, error } = await supabase
+      .from('eventos')
+      .select('*')
+      .not('fecha_evento', 'is', null)
+      .gte('fecha_evento', hoy)
+      .order('fecha_evento', { ascending: true })
+      .limit(1);
+    
+    if (error) throw error;
+    return data?.[0] || null;
+  },
+
+  // Obtener últimos eventos finalizados
+  async getUltimosEventosFinalizados(limit: number = 3): Promise<Evento[]> {
+    const hoy = new Date().toISOString().split('T')[0];
+    const { data, error } = await supabase
+      .from('eventos')
+      .select('*')
+      .not('fecha_evento', 'is', null)
+      .lt('fecha_evento', hoy)
+      .order('fecha_evento', { ascending: false })
+      .limit(limit);
+    
+    if (error) throw error;
+    return data || [];
   }
 };
 

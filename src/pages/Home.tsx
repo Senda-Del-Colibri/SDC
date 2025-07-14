@@ -2,64 +2,17 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   User, 
-  Search, 
   Calendar, 
-  List, 
-  Users, 
-  CheckCircle,
   TrendingUp,
   DollarSign,
   UserCheck,
   CalendarDays
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { statsService } from '../services/api';
+import { statsService, eventoService } from '../services/api';
 import { Card, CardBody } from '../components/ui';
 
-const dashboardCards = [
-  {
-    title: 'Alta de Clientes',
-    description: 'Registrar nuevos clientes',
-    href: '/clientes/alta',
-    icon: User,
-    color: 'from-blue-500 to-blue-600'
-  },
-  {
-    title: 'Búsqueda de Clientes',
-    description: 'Buscar y gestionar clientes',
-    href: '/clientes/busqueda',
-    icon: Search,
-    color: 'from-green-500 to-green-600'
-  },
-  {
-    title: 'Alta de Eventos',
-    description: 'Crear nuevos eventos',
-    href: '/eventos/alta',
-    icon: Calendar,
-    color: 'from-purple-500 to-purple-600'
-  },
-  {
-    title: 'Búsqueda de Eventos',
-    description: 'Ver y gestionar eventos',
-    href: '/eventos/busqueda',
-    icon: List,
-    color: 'from-orange-500 to-orange-600'
-  },
-  {
-    title: 'Consulta de Referidos',
-    description: 'Ver referidos por cliente',
-    href: '/referidos/consulta',
-    icon: Users,
-    color: 'from-pink-500 to-pink-600'
-  },
-  {
-    title: 'Registrar Asistencia',
-    description: 'Registrar asistencia a eventos',
-    href: '/asistencias/alta',
-    icon: CheckCircle,
-    color: 'from-indigo-500 to-indigo-600'
-  }
-];
+
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -69,11 +22,30 @@ export const Home: React.FC = () => {
     queryFn: statsService.getDashboardStats,
   });
 
+  const { data: proximoEvento, isLoading: isLoadingProximo } = useQuery({
+    queryKey: ['proximo-evento'],
+    queryFn: eventoService.getProximoEvento,
+  });
+
+  const { data: ultimosEventos, isLoading: isLoadingUltimos } = useQuery({
+    queryKey: ['ultimos-eventos'],
+    queryFn: () => eventoService.getUltimosEventosFinalizados(3),
+    enabled: !proximoEvento && !isLoadingProximo, // Solo ejecutar si no hay próximo evento
+  });
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
       currency: 'MXN'
     }).format(amount);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-MX', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   return (
@@ -167,41 +139,102 @@ export const Home: React.FC = () => {
         )}
       </div>
 
-      {/* Tarjetas de navegación */}
+      {/* Sección de Eventos */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Módulos del Sistema</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {dashboardCards.map((card) => {
-            const Icon = card.icon;
-            return (
-              <Card
-                key={card.href}
-                className="dashboard-card group"
-                onClick={() => navigate(card.href)}
-              >
-                <CardBody>
-                  <div className="flex items-center mb-4">
-                    <div className={`p-3 rounded-lg bg-gradient-to-r ${card.color} group-hover:scale-110 transition-transform duration-200`}>
-                      <Icon className="w-6 h-6 text-white" />
+        {isLoadingProximo || isLoadingUltimos ? (
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
+            <div className="h-32 bg-gray-200 rounded"></div>
+          </div>
+        ) : proximoEvento ? (
+          // Mostrar próximo evento
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Próximo Evento</h2>
+            <Card className="border-l-4 border-l-green-500 bg-gradient-to-r from-green-50 to-green-100">
+              <CardBody>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center">
+                    <div className="p-3 bg-green-200 rounded-lg">
+                      <Calendar className="w-8 h-8 text-green-700" />
                     </div>
                     <div className="ml-4">
-                      <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors duration-200">
-                        {card.title}
-                      </h3>
+                      <h3 className="text-xl font-bold text-green-900">{proximoEvento.nombre}</h3>
+                      <p className="text-green-700 mb-2">{proximoEvento.ubicacion}</p>
+                      {proximoEvento.fecha_evento && (
+                        <p className="text-sm text-green-600 font-medium">
+                          📅 {formatDate(proximoEvento.fecha_evento)}
+                        </p>
+                      )}
                     </div>
                   </div>
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    {card.description}
-                  </p>
-                  <div className="mt-4 flex items-center text-primary-600 text-sm font-medium">
-                    <span className="mr-2">Acceder</span>
-                    <TrendingUp className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+                  <div className="text-right">
+                    <p className="text-sm text-green-600 mb-1">Gasto estimado</p>
+                    <p className="text-lg font-bold text-green-800">{formatCurrency(proximoEvento.gasto)}</p>
                   </div>
-                </CardBody>
-              </Card>
-            );
-          })}
-        </div>
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+        ) : ultimosEventos && ultimosEventos.length > 0 ? (
+          // Mostrar últimos eventos finalizados
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Últimos Eventos Finalizados</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {ultimosEventos.map((evento) => (
+                <Card key={evento.id} className="border-l-4 border-l-blue-500">
+                  <CardBody>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <Calendar className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div className="ml-3">
+                          <h3 className="font-semibold text-gray-900">{evento.nombre}</h3>
+                          <p className="text-sm text-gray-600">{evento.ubicacion}</p>
+                        </div>
+                      </div>
+                    </div>
+                    {evento.fecha_evento && (
+                      <p className="text-sm text-blue-600 font-medium mb-2">
+                        📅 {formatDate(evento.fecha_evento)}
+                      </p>
+                    )}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <p className="text-gray-500">Asistentes</p>
+                        <p className="font-medium">{evento.cantidad_personas}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500">Ingresos</p>
+                        <p className="font-medium text-green-600">{formatCurrency(evento.total_cobrado)}</p>
+                      </div>
+                    </div>
+                  </CardBody>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ) : (
+          // No hay eventos
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Eventos</h2>
+            <Card className="border-l-4 border-l-gray-400">
+              <CardBody>
+                <div className="text-center py-8">
+                  <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No hay eventos programados</h3>
+                  <p className="text-gray-600 mb-4">Crea tu primer evento para comenzar</p>
+                  <button
+                    onClick={() => navigate('/eventos/alta')}
+                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                  >
+                    Crear Evento
+                  </button>
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+        )}
       </div>
 
       {/* Información adicional */}

@@ -307,25 +307,6 @@ export const AltaReferidos: React.FC = () => {
         </form>
       </Card>
 
-      {/* Información importante */}
-      <Card className="p-6 bg-blue-50 border-blue-200">
-        <div className="flex items-start space-x-3">
-          <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
-          <div>
-            <h3 className="text-sm font-medium text-blue-900 mb-1">
-              Importante sobre los referidos
-            </h3>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Un cliente no puede referirse a sí mismo</li>
-              <li>• Un mismo cliente no puede referir a la misma persona más de una vez</li>
-              <li>• Una persona puede ser referida por múltiples clientes diferentes</li>
-              <li>• Los referidos no se pueden modificar ni eliminar una vez registrados</li>
-              <li>• Ambos clientes deben estar previamente registrados en el sistema</li>
-            </ul>
-          </div>
-        </div>
-      </Card>
-
       {/* Estadísticas rápidas */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-6">
@@ -352,6 +333,26 @@ export const AltaReferidos: React.FC = () => {
           </div>
         </Card>
       </div>
+
+      {/* Información importante */}
+      <Card className="p-6 bg-blue-50 border-blue-200">
+        <div className="flex items-start space-x-3">
+          <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-medium text-blue-900 mb-1">
+              Importante sobre los referidos
+            </h3>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Un cliente no puede referirse a sí mismo</li>
+              <li>• Un mismo cliente no puede referir a la misma persona más de una vez</li>
+              <li>• Cada persona solo puede ser referida una vez en el sistema</li>
+              <li>• Un cliente puede referir a múltiples personas diferentes</li>
+              <li>• Los referidos se registran automáticamente con la fecha actual</li>
+              <li>• Ambos clientes deben estar previamente registrados en el sistema</li>
+            </ul>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }; 

@@ -20,13 +20,15 @@ interface FormErrors {
   nombre?: string;
   ubicacion?: string;
   gasto?: string;
+  fecha_evento?: string;
 }
 
 export const AltaEventos: React.FC = () => {
   const [formData, setFormData] = useState<EventoForm>({
     nombre: '',
     ubicacion: '',
-    gasto: 0
+    gasto: 0,
+    fecha_evento: ''
   });
   
   const [gastoInput, setGastoInput] = useState<string>('');
@@ -82,6 +84,17 @@ export const AltaEventos: React.FC = () => {
       newErrors.gasto = 'El gasto no puede exceder $999,999.99';
     }
 
+    // Validar fecha del evento (opcional)
+    if (formData.fecha_evento && formData.fecha_evento.trim()) {
+      const fechaEvento = new Date(formData.fecha_evento);
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0); // Resetear horas para comparar solo fechas
+      
+      if (isNaN(fechaEvento.getTime())) {
+        newErrors.fecha_evento = 'La fecha del evento no es válida';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -131,7 +144,10 @@ export const AltaEventos: React.FC = () => {
     const eventoData: EventoForm = {
       nombre: formData.nombre.trim(),
       ubicacion: formData.ubicacion.trim(),
-      gasto: Number(formData.gasto)
+      gasto: Number(formData.gasto),
+      ...(formData.fecha_evento && formData.fecha_evento.trim() && {
+        fecha_evento: formData.fecha_evento.trim()
+      })
     };
 
     createEventoMutation.mutate(eventoData);
@@ -142,7 +158,8 @@ export const AltaEventos: React.FC = () => {
     setFormData({
       nombre: '',
       ubicacion: '',
-      gasto: 0
+      gasto: 0,
+      fecha_evento: ''
     });
     setGastoInput('');
     setErrors({});
@@ -255,6 +272,31 @@ export const AltaEventos: React.FC = () => {
                   )}
                   <p className="mt-1 text-xs text-gray-500">
                     Gastos asociados al evento (materiales, renta, etc.)
+                  </p>
+                </div>
+
+                {/* Fecha del Evento */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Fecha del Evento
+                  </label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Input
+                      type="date"
+                      value={formData.fecha_evento || ''}
+                      onChange={(e) => handleInputChange('fecha_evento', e.target.value)}
+                      className={`pl-10 ${errors.fecha_evento ? 'border-red-500' : ''}`}
+                    />
+                  </div>
+                  {errors.fecha_evento && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.fecha_evento}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-gray-500">
+                    Fecha programada para la realización del evento (opcional)
                   </p>
                 </div>
 

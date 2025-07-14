@@ -26,6 +26,7 @@ export interface Evento extends BaseEntity {
   gasto: number;
   total_cobrado: number;
   cantidad_personas: number;
+  fecha_evento?: string; // Fecha programada del evento (formato ISO)
 }
 
 // Referido
@@ -57,6 +58,7 @@ export interface EventoForm {
   nombre: string;
   ubicacion: string;
   gasto: number;
+  fecha_evento?: string; // Fecha programada del evento (formato ISO)
 }
 
 export interface ReferidoForm {

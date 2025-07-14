@@ -90,6 +90,17 @@ export const EventoDetails: React.FC<EventoDetailsProps> = ({ evento }) => {
                 <p className="text-gray-900">{evento.ubicacion}</p>
               </div>
             </div>
+            {evento.fecha_evento && (
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Fecha del Evento
+                </label>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <p className="text-gray-900">{formatDate(evento.fecha_evento)}</p>
+                </div>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
                 Fecha de Creación
