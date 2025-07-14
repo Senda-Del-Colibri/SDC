@@ -6,7 +6,6 @@ import { clienteService } from '../../services/api';
 import { Button, Input, Card, CardHeader, CardBody } from '../../components/ui';
 import { toast } from 'react-toastify';
 import type { ClienteForm } from '../../types';
-import { sanitizeInput, validatePhone } from '../../utils/security';
 
 export const AltaClientes: React.FC = () => {
   const navigate = useNavigate();
@@ -45,39 +44,22 @@ export const AltaClientes: React.FC = () => {
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    // Sanitizar y validar nombre
-    const cleanNombre = sanitizeInput(formData.nombre.trim());
-    if (!cleanNombre) {
+    if (!formData.nombre.trim()) {
       newErrors.nombre = 'El nombre es requerido';
-    } else if (cleanNombre.length < 2) {
+    } else if (formData.nombre.trim().length < 2) {
       newErrors.nombre = 'El nombre debe tener al menos 2 caracteres';
-    } else if (cleanNombre.length > 50) {
-      newErrors.nombre = 'El nombre no puede exceder 50 caracteres';
     }
 
-    // Sanitizar y validar apellidos
-    const cleanApellidos = sanitizeInput(formData.apellidos.trim());
-    if (!cleanApellidos) {
+    if (!formData.apellidos.trim()) {
       newErrors.apellidos = 'Los apellidos son requeridos';
-    } else if (cleanApellidos.length < 2) {
+    } else if (formData.apellidos.trim().length < 2) {
       newErrors.apellidos = 'Los apellidos deben tener al menos 2 caracteres';
-    } else if (cleanApellidos.length > 50) {
-      newErrors.apellidos = 'Los apellidos no pueden exceder 50 caracteres';
     }
 
-    // Validar celular si está presente
     if (formData.celular && formData.celular.trim()) {
-      const cleanCelular = sanitizeInput(formData.celular.trim());
-      if (!validatePhone(cleanCelular)) {
+      const phoneRegex = /^[\d\s\-+()]+$/;
+      if (!phoneRegex.test(formData.celular)) {
         newErrors.celular = 'El formato del celular no es válido';
-      }
-    }
-
-    // Validar comentarios
-    if (formData.comentarios && formData.comentarios.trim()) {
-      const cleanComentarios = sanitizeInput(formData.comentarios.trim());
-      if (cleanComentarios.length > 500) {
-        newErrors.comentarios = 'Los comentarios no pueden exceder 500 caracteres';
       }
     }
 

@@ -21,7 +21,6 @@ import { BusquedaEventos } from './pages/eventos/BusquedaEventos';
 
 // Referido pages
 import { ConsultaReferidos } from './pages/referidos/ConsultaReferidos';
-import { AltaReferidos } from './pages/referidos/AltaReferidos';
 
 // Asistencia pages
 import { AltaAsistencias } from './pages/asistencias/AltaAsistencias';
@@ -93,14 +92,6 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <ConsultaReferidos />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/referidos/alta" element={
-              <ProtectedRoute>
-                <Layout>
-                  <AltaReferidos />
                 </Layout>
               </ProtectedRoute>
             } />

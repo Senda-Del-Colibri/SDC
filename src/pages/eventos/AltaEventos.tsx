@@ -15,7 +15,6 @@ import { eventoService } from '../../services/api';
 import { Button, Input, Card, CardHeader, CardBody } from '../../components/ui';
 import type { EventoForm } from '../../types';
 import { toast } from 'react-toastify';
-import { sanitizeInput } from '../../utils/security';
 
 interface FormErrors {
   nombre?: string;
@@ -58,23 +57,21 @@ export const AltaEventos: React.FC = () => {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    // Sanitizar y validar nombre
-    const cleanNombre = sanitizeInput(formData.nombre.trim());
-    if (!cleanNombre) {
+    // Validar nombre
+    if (!formData.nombre.trim()) {
       newErrors.nombre = 'El nombre del evento es obligatorio';
-    } else if (cleanNombre.length < 3) {
+    } else if (formData.nombre.trim().length < 3) {
       newErrors.nombre = 'El nombre debe tener al menos 3 caracteres';
-    } else if (cleanNombre.length > 200) {
+    } else if (formData.nombre.trim().length > 200) {
       newErrors.nombre = 'El nombre no puede exceder 200 caracteres';
     }
 
-    // Sanitizar y validar ubicación
-    const cleanUbicacion = sanitizeInput(formData.ubicacion.trim());
-    if (!cleanUbicacion) {
+    // Validar ubicación
+    if (!formData.ubicacion.trim()) {
       newErrors.ubicacion = 'La ubicación es obligatoria';
-    } else if (cleanUbicacion.length < 3) {
+    } else if (formData.ubicacion.trim().length < 3) {
       newErrors.ubicacion = 'La ubicación debe tener al menos 3 caracteres';
-    } else if (cleanUbicacion.length > 300) {
+    } else if (formData.ubicacion.trim().length > 300) {
       newErrors.ubicacion = 'La ubicación no puede exceder 300 caracteres';
     }
 
