@@ -16,6 +16,7 @@ import { clienteService, eventoService, apartadoService } from '../../services/a
 import type { ApartadoForm } from '../../types';
 import { Card, Button, Input, LoadingSpinner } from '../../components/ui';
 import { getErrorMessage } from '../../utils/errorHandler';
+import { createLocalDate } from '../../utils';
 
 interface FormData {
   cliente_id: string;
@@ -54,9 +55,17 @@ export const ApartarLugar: React.FC = () => {
     queryFn: clienteService.getAll,
   });
 
-  const { data: eventos = [], isLoading: isLoadingEventos } = useQuery({
+  const { data: allEventos = [], isLoading: isLoadingEventos } = useQuery({
     queryKey: ['eventos'],
     queryFn: eventoService.getAll,
+  });
+
+  // Filtrar solo eventos próximos (con fecha futura)
+  const eventos = allEventos.filter(evento => {
+    if (!evento.fecha_evento) return false;
+    const eventoDate = createLocalDate(evento.fecha_evento);
+    const now = new Date();
+    return eventoDate > now;
   });
 
   const { data: apartados = [] } = useQuery({
@@ -298,8 +307,11 @@ export const ApartarLugar: React.FC = () => {
                       onChange={handleInputChange}
                       className={`input-field pl-10 ${errors.evento_id ? 'border-red-500' : ''}`}
                       required
+                      disabled={eventos.length === 0}
                     >
-                      <option value="">Selecciona un evento...</option>
+                      <option value="">
+                        {eventos.length === 0 ? 'No hay eventos próximos disponibles' : 'Selecciona un evento...'}
+                      </option>
                       {eventos.map(evento => (
                         <option key={evento.id} value={evento.id}>
                           {evento.nombre}
@@ -310,6 +322,16 @@ export const ApartarLugar: React.FC = () => {
                   </div>
                   {errors.evento_id && (
                     <div className="form-error">{errors.evento_id}</div>
+                  )}
+                  {eventos.length === 0 && (
+                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <AlertCircle className="w-4 h-4 text-yellow-600" />
+                        <span className="text-sm text-yellow-800">
+                          Solo se pueden apartar lugares en eventos próximos. No hay eventos futuros disponibles en este momento.
+                        </span>
+                      </div>
+                    </div>
                   )}
                 </div>
 
@@ -414,7 +436,7 @@ export const ApartarLugar: React.FC = () => {
                   type="submit"
                   icon={Save}
                   loading={isSubmitting}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || eventos.length === 0}
                 >
                   {isSubmitting ? 'Apartando...' : 'Apartar Lugar'}
                 </Button>

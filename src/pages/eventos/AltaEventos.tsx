@@ -15,6 +15,7 @@ import { eventoService } from '../../services/api';
 import { Button, Input, Card, CardHeader, CardBody } from '../../components/ui';
 import type { EventoForm } from '../../types';
 import { toast } from 'react-toastify';
+import { createLocalDate } from '../../utils';
 
 interface FormErrors {
   nombre?: string;
@@ -86,9 +87,8 @@ export const AltaEventos: React.FC = () => {
 
     // Validar fecha del evento (opcional)
     if (formData.fecha_evento && formData.fecha_evento.trim()) {
-      const fechaEvento = new Date(formData.fecha_evento);
-      const hoy = new Date();
-      hoy.setHours(0, 0, 0, 0); // Resetear horas para comparar solo fechas
+      // Crear fecha en zona horaria local para evitar problemas de UTC
+      const fechaEvento = createLocalDate(formData.fecha_evento);
       
       if (isNaN(fechaEvento.getTime())) {
         newErrors.fecha_evento = 'La fecha del evento no es válida';

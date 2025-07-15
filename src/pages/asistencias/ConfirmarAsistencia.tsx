@@ -28,6 +28,18 @@ interface AsistenciaSinApartadoData {
   monto_pagado: number;
 }
 
+interface ApartadoData {
+  id: number;
+  cliente_id: number;
+  evento_id: number;
+  monto_anticipo: number;
+  monto_total_esperado: number;
+  estado: string;
+  notas?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export const ConfirmarAsistencia: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -36,6 +48,10 @@ export const ConfirmarAsistencia: React.FC = () => {
   const [apartadoConfirmando, setApartadoConfirmando] = useState<number | null>(null);
   const [montoRestante, setMontoRestante] = useState<string>('');
   const [showModalSinApartado, setShowModalSinApartado] = useState(false);
+  const [showModalConfirmacion, setShowModalConfirmacion] = useState(false);
+  const [apartadoSeleccionado, setApartadoSeleccionado] = useState<ApartadoData | null>(null);
+  const [pagoCompleto, setPagoCompleto] = useState<boolean | null>(null);
+  const [montoManual, setMontoManual] = useState<string>('');
   const [asistenciaSinApartado, setAsistenciaSinApartado] = useState<AsistenciaSinApartadoData>({
     cliente_id: 0,
     monto_pagado: 0
@@ -99,8 +115,41 @@ export const ConfirmarAsistencia: React.FC = () => {
     }
   });
 
-  const handleConfirmarApartado = (apartadoId: number) => {
-    setApartadoConfirmando(apartadoId);
+  const handleConfirmarApartado = (apartado: ApartadoData) => {
+    setApartadoSeleccionado(apartado);
+    setShowModalConfirmacion(true);
+    setPagoCompleto(null);
+    setMontoManual('');
+  };
+
+  const handleConfirmarPago = () => {
+    if (!apartadoSeleccionado || pagoCompleto === null) return;
+
+    let montoRestante: number;
+
+    if (pagoCompleto) {
+      // Pago completo: monto restante = total esperado - anticipo
+      montoRestante = apartadoSeleccionado.monto_total_esperado - apartadoSeleccionado.monto_anticipo;
+    } else {
+      // Pago parcial: usar monto manual
+      const monto = parseFloat(montoManual);
+      if (isNaN(monto) || monto < 0) {
+        toast.error('Ingresa un monto válido');
+        return;
+      }
+      montoRestante = monto;
+    }
+
+    confirmarApartadoMutation.mutate({
+      apartadoId: apartadoSeleccionado.id,
+      montoRestante: montoRestante
+    });
+
+    // Cerrar modal
+    setShowModalConfirmacion(false);
+    setApartadoSeleccionado(null);
+    setPagoCompleto(null);
+    setMontoManual('');
   };
 
   const handleSubmitConfirmacion = (e: React.FormEvent) => {
@@ -376,7 +425,7 @@ export const ConfirmarAsistencia: React.FC = () => {
                         </form>
                       ) : (
                         <Button
-                          onClick={() => handleConfirmarApartado(apartado.id)}
+                          onClick={() => handleConfirmarApartado(apartado)}
                           icon={CheckCircle}
                           size="sm"
                         >
@@ -391,6 +440,122 @@ export const ConfirmarAsistencia: React.FC = () => {
           )}
         </Card>
       )}
+
+      {/* Modal de confirmación de pago */}
+      <Modal
+        isOpen={showModalConfirmacion}
+        onClose={() => {
+          setShowModalConfirmacion(false);
+          setApartadoSeleccionado(null);
+          setPagoCompleto(null);
+          setMontoManual('');
+        }}
+        title="Confirmar Asistencia"
+        size="md"
+      >
+        {apartadoSeleccionado && (
+          <div className="space-y-6">
+            {/* Información del apartado */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-medium text-gray-900 mb-2">
+                {getClienteNombre(apartadoSeleccionado.cliente_id)}
+              </h4>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-500">Anticipo pagado:</span>
+                  <p className="font-medium text-green-600">{formatCurrency(apartadoSeleccionado.monto_anticipo)}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Total esperado:</span>
+                  <p className="font-medium">{formatCurrency(apartadoSeleccionado.monto_total_esperado)}</p>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-gray-500">Monto restante:</span>
+                  <p className="font-medium text-orange-600">
+                    {formatCurrency(apartadoSeleccionado.monto_total_esperado - apartadoSeleccionado.monto_anticipo)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Pregunta sobre el pago */}
+            <div>
+              <h4 className="font-medium text-gray-900 mb-3">
+                ¿El cliente pagó el monto restante completo?
+              </h4>
+              <div className="space-y-3">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="pagoCompleto"
+                    value="si"
+                    checked={pagoCompleto === true}
+                    onChange={() => setPagoCompleto(true)}
+                    className="mr-2"
+                  />
+                  <span>Sí, pagó el monto restante completo ({formatCurrency(apartadoSeleccionado.monto_total_esperado - apartadoSeleccionado.monto_anticipo)})</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="pagoCompleto"
+                    value="no"
+                    checked={pagoCompleto === false}
+                    onChange={() => setPagoCompleto(false)}
+                    className="mr-2"
+                  />
+                  <span>No, pagó una cantidad diferente</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Campo para monto manual */}
+            {pagoCompleto === false && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Monto restante pagado
+                </label>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Input
+                    type="number"
+                    value={montoManual}
+                    onChange={(e) => setMontoManual(e.target.value)}
+                    placeholder="0.00"
+                    className="pl-10"
+                    min="0"
+                    step="0.01"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Botones */}
+            <div className="flex justify-end space-x-3 pt-4">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setShowModalConfirmacion(false);
+                  setApartadoSeleccionado(null);
+                  setPagoCompleto(null);
+                  setMontoManual('');
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleConfirmarPago}
+                loading={confirmarApartadoMutation.isPending}
+                disabled={pagoCompleto === null}
+              >
+                Confirmar Asistencia
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Modal para agregar sin apartado */}
       <Modal

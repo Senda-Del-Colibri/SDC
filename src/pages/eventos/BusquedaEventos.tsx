@@ -20,6 +20,7 @@ import { EventoDetails } from '../../components/EventoDetails';
 import type { Evento } from '../../types';
 import { toast } from 'react-toastify';
 import { exportEventosToCSV } from '../../utils/exportUtils';
+import { createLocalDate } from '../../utils';
 
 export const BusquedaEventos: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -88,7 +89,7 @@ export const BusquedaEventos: React.FC = () => {
       
       // Filtro por fecha del evento
       if (evento.fecha_evento) {
-        const fechaEvento = new Date(evento.fecha_evento);
+        const fechaEvento = createLocalDate(evento.fecha_evento);
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
         
@@ -177,7 +178,7 @@ export const BusquedaEventos: React.FC = () => {
 
   // Formatear fecha
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-MX', {
+    return createLocalDate(dateString).toLocaleDateString('es-MX', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'

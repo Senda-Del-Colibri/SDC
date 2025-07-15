@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { clienteService, referidoService } from '../../services/api';
 import type { ReferidoForm } from '../../types';
@@ -188,19 +188,9 @@ export const AltaReferidos: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="page-header">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={ArrowLeft}
-            onClick={() => navigate('/referidos/consulta')}
-          >
-            Volver
-          </Button>
-          <div>
-            <h1 className="page-title">Registrar Referido</h1>
-            <p className="page-subtitle">Registrar nuevo referido de cliente</p>
-          </div>
+        <div>
+          <h1 className="page-title">Registrar Referido</h1>
+          <p className="page-subtitle">Registrar nuevo referido de cliente</p>
         </div>
       </div>
 

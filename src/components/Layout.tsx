@@ -8,6 +8,7 @@ import {
   List, 
   Users, 
   CheckCircle, 
+  Clock,
   LogOut,
   Menu,
   X,
@@ -48,6 +49,8 @@ const navigationItems: NavigationItem[] = [
     children: [
       { name: 'Alta Eventos', href: '/eventos/alta', icon: Calendar },
       { name: 'Búsqueda Eventos', href: '/eventos/busqueda', icon: List },
+      { name: 'Consulta Apartados', href: '/eventos/apartados', icon: Clock },
+      { name: 'Consulta Asistencias', href: '/eventos/asistencias', icon: CheckCircle },
     ]
   },
   {

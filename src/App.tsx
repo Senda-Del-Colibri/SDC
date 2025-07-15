@@ -18,6 +18,8 @@ import { BusquedaClientes } from './pages/clientes/BusquedaClientes';
 // Evento pages
 import { AltaEventos } from './pages/eventos/AltaEventos';
 import { BusquedaEventos } from './pages/eventos/BusquedaEventos';
+import { ConsultaApartados } from './pages/eventos/ConsultaApartados';
+import { ConsultaAsistencias } from './pages/eventos/ConsultaAsistencias';
 
 // Referido pages
 import { AltaReferidos } from './pages/referidos/AltaReferidos';
@@ -86,6 +88,22 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <BusquedaEventos />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/eventos/apartados" element={
+              <ProtectedRoute>
+                <Layout>
+                  <ConsultaApartados />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/eventos/asistencias" element={
+              <ProtectedRoute>
+                <Layout>
+                  <ConsultaAsistencias />
                 </Layout>
               </ProtectedRoute>
             } />

@@ -11,6 +11,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { statsService, eventoService } from '../services/api';
 import { Card, CardBody } from '../components/ui';
+import { createLocalDate } from '../utils';
 
 
 
@@ -41,7 +42,7 @@ export const Home: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-MX', {
+    return createLocalDate(dateString).toLocaleDateString('es-MX', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'

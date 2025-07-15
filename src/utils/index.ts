@@ -18,6 +18,20 @@ export const formatDate = (date: string | Date): string => {
   }).format(dateObj);
 };
 
+// Crear fecha local desde string YYYY-MM-DD para evitar problemas de zona horaria
+export const createLocalDate = (dateString: string): Date => {
+  const parts = dateString.split('-');
+  return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+};
+
+// Formatear fecha para input date (YYYY-MM-DD)
+export const formatDateForInput = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 // Formatear fecha corta
 export const formatDateShort = (date: string | Date): string => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
