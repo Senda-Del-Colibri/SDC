@@ -17,6 +17,7 @@ import { clienteService, eventoService, apartadoService, asistenciaService } fro
 import type { AsistenciaForm } from '../../types';
 import { Card, Button, Input, LoadingSpinner, Modal } from '../../components/ui';
 import { getErrorMessage } from '../../utils/errorHandler';
+import { createLocalDate } from '../../utils';
 
 interface ConfirmarApartadoData {
   apartadoId: number;
@@ -209,7 +210,7 @@ export const ConfirmarAsistencia: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-MX', {
+    return createLocalDate(dateString).toLocaleDateString('es-MX', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'

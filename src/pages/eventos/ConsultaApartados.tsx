@@ -58,16 +58,48 @@ export const ConsultaApartados: React.FC = () => {
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
 
-  // Filtrar solo eventos próximos
-  const eventosProximos = allEventos.filter((evento: Evento) => {
-    if (!evento.fecha_evento) return false;
-    const eventoDate = createLocalDate(evento.fecha_evento);
-    const now = new Date();
-    return eventoDate > now;
+  // Query para obtener todos los apartados
+  const { data: allApartados = [], isLoading: isLoadingApartados } = useQuery({
+    queryKey: ['apartados'],
+    queryFn: apartadoService.getAll,
+    staleTime: 5 * 60 * 1000, // 5 minutos
   });
 
+  // Crear un Set de IDs de eventos que tienen apartados PENDIENTES para búsqueda más eficiente
+  const eventosConApartadosIds = React.useMemo(() => {
+    if (isLoadingApartados || !allApartados.length) return new Set();
+    
+    const ids = new Set<number>();
+    allApartados.forEach((apartado: ApartadoWithCliente) => {
+      if (apartado && apartado.evento_id && apartado.estado === 'apartado') {
+        ids.add(apartado.evento_id);
+      }
+    });
+    
+    console.log('IDs de eventos con apartados PENDIENTES:', Array.from(ids));
+    return ids;
+  }, [allApartados, isLoadingApartados]);
+
+  // Filtrar solo eventos que tienen apartados PENDIENTES
+  const eventosConApartados = React.useMemo(() => {
+    if (isLoadingApartados || isLoading) return [];
+    
+    const filtered = allEventos.filter((evento: Evento) => {
+      const hasApartadosPendientes = eventosConApartadosIds.has(evento.id);
+      console.log(`Evento ${evento.nombre} (ID: ${evento.id}) - Tiene apartados PENDIENTES: ${hasApartadosPendientes}`);
+      return hasApartadosPendientes;
+    });
+    
+    console.log('Total eventos:', allEventos.length);
+    console.log('Total apartados:', allApartados.length);
+    console.log('Apartados pendientes:', allApartados.filter(a => a.estado === 'apartado').length);
+    console.log('Eventos con apartados PENDIENTES:', filtered.length);
+    
+    return filtered;
+  }, [allEventos, eventosConApartadosIds, isLoadingApartados, isLoading, allApartados]);
+
   // Función para filtrar eventos
-  const filteredEventos = eventosProximos.filter((evento: Evento) => {
+  const filteredEventos = eventosConApartados.filter((evento: Evento) => {
     const matchesSearch = !searchQuery || 
       evento.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
       evento.ubicacion.toLowerCase().includes(searchQuery.toLowerCase());
@@ -91,7 +123,7 @@ export const ConsultaApartados: React.FC = () => {
 
   const handleSearch = () => {
     setIsSearching(true);
-    const filteredResults = eventosProximos.filter((evento: Evento) => 
+    const filteredResults = eventosConApartados.filter((evento: Evento) => 
       evento.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
       evento.ubicacion.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -116,7 +148,9 @@ export const ConsultaApartados: React.FC = () => {
 
     try {
       const apartadosData = await apartadoService.getByEventoId(evento.id);
-      setApartados(apartadosData);
+      // Filtrar solo apartados pendientes
+      const apartadosPendientes = apartadosData.filter(apartado => apartado.estado === 'apartado');
+      setApartados(apartadosPendientes);
     } catch (error) {
       console.error('Error al cargar apartados:', error);
       toast.error('Error al cargar los apartados del evento');
@@ -146,7 +180,7 @@ export const ConsultaApartados: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Consulta Apartados</h1>
         <div className="text-sm text-gray-500">
-          Solo eventos próximos
+                          Solo eventos con apartados pendientes
         </div>
       </div>
 
@@ -220,15 +254,15 @@ export const ConsultaApartados: React.FC = () => {
         </div>
       </Card>
 
-      {/* Lista de eventos próximos */}
+                    {/* Lista de eventos */}
       <Card className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-gray-900">
-            Eventos Próximos ({displayedEventos.length})
+                            Eventos ({displayedEventos.length})
           </h2>
         </div>
 
-        {isLoading ? (
+        {isLoading || isLoadingApartados ? (
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
           </div>
@@ -246,10 +280,28 @@ export const ConsultaApartados: React.FC = () => {
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
                         <h3 className="text-lg font-semibold text-gray-900">{evento.nombre}</h3>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          <Clock className="w-3 h-3 mr-1" />
-                          Próximo
-                        </span>
+                                                  {(() => {
+                            if (!evento.fecha_evento) {
+                              return (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  Sin fecha
+                                </span>
+                              );
+                            }
+                            const eventoDate = createLocalDate(evento.fecha_evento);
+                            const now = new Date();
+                            const isUpcoming = eventoDate > now;
+                            
+                            return (
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                isUpcoming ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                              }`}>
+                                <Clock className="w-3 h-3 mr-1" />
+                                {isUpcoming ? 'Próximo' : 'Finalizado'}
+                              </span>
+                            );
+                          })()}
                       </div>
 
                       <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
@@ -291,8 +343,8 @@ export const ConsultaApartados: React.FC = () => {
 
             {displayedEventos.length === 0 && (
               <div className="text-center py-8 text-gray-500">
-                {eventosProximos.length === 0 
-                  ? 'No hay eventos próximos disponibles.' 
+                                {eventosConApartados.length === 0
+                ? 'No hay eventos con apartados pendientes disponibles.' 
                   : 'No se encontraron eventos que coincidan con los criterios de búsqueda.'
                 }
               </div>
@@ -324,7 +376,12 @@ export const ConsultaApartados: React.FC = () => {
                   </div>
                 )}
                 <div>
-                  <span className="font-medium">Estado:</span> Próximo
+                  <span className="font-medium">Estado:</span> {(() => {
+                  if (!selectedEvento.fecha_evento) return 'Sin fecha';
+                  const eventoDate = createLocalDate(selectedEvento.fecha_evento);
+                  const now = new Date();
+                  return eventoDate > now ? 'Próximo' : 'Finalizado';
+                })()}
                 </div>
               </div>
             </div>

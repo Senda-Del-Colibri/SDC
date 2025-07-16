@@ -57,16 +57,8 @@ export const ConsultaAsistencias: React.FC = () => {
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
 
-  // Filtrar solo eventos finalizados
-  const eventosFinalizados = allEventos.filter((evento: Evento) => {
-    if (!evento.fecha_evento) return false;
-    const eventoDate = createLocalDate(evento.fecha_evento);
-    const now = new Date();
-    return eventoDate <= now;
-  });
-
   // Función para filtrar eventos
-  const filteredEventos = eventosFinalizados.filter((evento: Evento) => {
+  const filteredEventos = allEventos.filter((evento: Evento) => {
     const matchesSearch = !searchQuery || 
       evento.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
       evento.ubicacion.toLowerCase().includes(searchQuery.toLowerCase());
@@ -90,7 +82,7 @@ export const ConsultaAsistencias: React.FC = () => {
 
   const handleSearch = () => {
     setIsSearching(true);
-    const filteredResults = eventosFinalizados.filter((evento: Evento) => 
+    const filteredResults = allEventos.filter((evento: Evento) => 
       evento.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
       evento.ubicacion.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -127,9 +119,9 @@ export const ConsultaAsistencias: React.FC = () => {
   const exportToCSV = () => {
     if (!selectedEvento || asistencias.length === 0) return;
 
-    let csvContent = 'Cliente,Contacto,Monto Pagado,Anticipo,Restante,Origen,Fecha\n';
+    let csvContent = 'Cliente,Monto Pagado,Origen,Fecha\n';
     asistencias.forEach((asistencia) => {
-      csvContent += `"${asistencia.cliente?.nombre || 'N/A'}","${asistencia.cliente?.celular || 'N/A'}","${formatCurrency(asistencia.monto_pagado)}","${formatCurrency(asistencia.monto_anticipo || 0)}","${formatCurrency(asistencia.monto_restante || 0)}","${asistencia.apartado_id ? 'Apartado' : 'Directo'}","${new Date(asistencia.created_at).toLocaleDateString()}"\n`;
+      csvContent += `"${asistencia.cliente?.nombre || 'N/A'}","${formatCurrency(asistencia.monto_pagado)}","${asistencia.apartado_id ? 'Apartado' : 'Directo'}","${new Date(asistencia.created_at).toLocaleDateString()}"\n`;
     });
 
     const filename = `asistencias_${selectedEvento.nombre}_${new Date().toISOString().split('T')[0]}.csv`;
@@ -145,7 +137,7 @@ export const ConsultaAsistencias: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Consulta Asistencias</h1>
         <div className="text-sm text-gray-500">
-          Solo eventos finalizados
+                          Todos los eventos
         </div>
       </div>
 
@@ -219,11 +211,11 @@ export const ConsultaAsistencias: React.FC = () => {
         </div>
       </Card>
 
-      {/* Lista de eventos finalizados */}
+                    {/* Lista de eventos */}
       <Card className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-gray-900">
-            Eventos Finalizados ({displayedEventos.length})
+                            Eventos ({displayedEventos.length})
           </h2>
         </div>
 
@@ -245,10 +237,27 @@ export const ConsultaAsistencias: React.FC = () => {
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
                         <h3 className="text-lg font-semibold text-gray-900">{evento.nombre}</h3>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Finalizado
-                        </span>
+                                                  {(() => {
+                            if (!evento.fecha_evento) {
+                              return (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                  Sin fecha
+                                </span>
+                              );
+                            }
+                            const eventoDate = createLocalDate(evento.fecha_evento);
+                            const now = new Date();
+                            const isFinished = eventoDate <= now;
+                            
+                            return (
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                isFinished ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                              }`}>
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                {isFinished ? 'Finalizado' : 'Próximo'}
+                              </span>
+                            );
+                          })()}
                       </div>
 
                       <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
@@ -290,8 +299,8 @@ export const ConsultaAsistencias: React.FC = () => {
 
             {displayedEventos.length === 0 && (
               <div className="text-center py-8 text-gray-500">
-                {eventosFinalizados.length === 0 
-                  ? 'No hay eventos finalizados disponibles.' 
+                                {allEventos.length === 0
+                ? 'No hay eventos disponibles.' 
                   : 'No se encontraron eventos que coincidan con los criterios de búsqueda.'
                 }
               </div>
@@ -305,6 +314,7 @@ export const ConsultaAsistencias: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={selectedEvento ? `Asistencias: ${selectedEvento.nombre}` : 'Asistencias del evento'}
+        size="xl"
       >
         <div className="space-y-4">
           {selectedEvento && (
@@ -322,7 +332,12 @@ export const ConsultaAsistencias: React.FC = () => {
                   </div>
                 )}
                 <div>
-                  <span className="font-medium">Estado:</span> Finalizado
+                  <span className="font-medium">Estado:</span> {(() => {
+                  if (!selectedEvento.fecha_evento) return 'Sin fecha';
+                  const eventoDate = createLocalDate(selectedEvento.fecha_evento);
+                  const now = new Date();
+                  return eventoDate <= now ? 'Finalizado' : 'Próximo';
+                })()}
                 </div>
               </div>
             </div>
@@ -352,10 +367,7 @@ export const ConsultaAsistencias: React.FC = () => {
                       <thead className="bg-gray-50">
                         <tr>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Contacto</th>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Monto Pagado</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Anticipo</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Restante</th>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Origen</th>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
                         </tr>
@@ -364,10 +376,7 @@ export const ConsultaAsistencias: React.FC = () => {
                         {asistencias.map((asistencia) => (
                           <tr key={asistencia.id}>
                             <td className="px-4 py-2 text-sm text-gray-900">{asistencia.cliente?.nombre || 'N/A'}</td>
-                            <td className="px-4 py-2 text-sm text-gray-500">{asistencia.cliente?.celular || 'N/A'}</td>
                             <td className="px-4 py-2 text-sm text-gray-900">{formatCurrency(asistencia.monto_pagado)}</td>
-                            <td className="px-4 py-2 text-sm text-gray-900">{formatCurrency(asistencia.monto_anticipo || 0)}</td>
-                            <td className="px-4 py-2 text-sm text-gray-900">{formatCurrency(asistencia.monto_restante || 0)}</td>
                             <td className="px-4 py-2">
                               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                                 asistencia.apartado_id ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
