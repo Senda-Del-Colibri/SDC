@@ -30,6 +30,11 @@ import { AltaAsistencias } from './pages/asistencias/AltaAsistencias';
 import { ApartarLugar } from './pages/asistencias/ApartarLugar';
 import { ConfirmarAsistencia } from './pages/asistencias/ConfirmarAsistencia';
 
+// Responsivas pages
+import { GestionResponsivas } from './pages/responsivas/GestionResponsivas';
+import { GeneracionIndividual } from './pages/responsivas/GeneracionIndividual';
+import { GeneracionMasiva } from './pages/responsivas/GeneracionMasiva';
+
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -146,6 +151,31 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <ConfirmarAsistencia />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            {/* Responsivas routes */}
+            <Route path="/responsivas" element={
+              <ProtectedRoute>
+                <Layout>
+                  <GestionResponsivas />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/responsivas/individual" element={
+              <ProtectedRoute>
+                <Layout>
+                  <GeneracionIndividual />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/responsivas/masiva" element={
+              <ProtectedRoute>
+                <Layout>
+                  <GeneracionMasiva />
                 </Layout>
               </ProtectedRoute>
             } />

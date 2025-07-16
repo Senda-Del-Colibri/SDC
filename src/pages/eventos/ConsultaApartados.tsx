@@ -76,7 +76,6 @@ export const ConsultaApartados: React.FC = () => {
       }
     });
     
-    console.log('IDs de eventos con apartados PENDIENTES:', Array.from(ids));
     return ids;
   }, [allApartados, isLoadingApartados]);
 
@@ -86,17 +85,11 @@ export const ConsultaApartados: React.FC = () => {
     
     const filtered = allEventos.filter((evento: Evento) => {
       const hasApartadosPendientes = eventosConApartadosIds.has(evento.id);
-      console.log(`Evento ${evento.nombre} (ID: ${evento.id}) - Tiene apartados PENDIENTES: ${hasApartadosPendientes}`);
       return hasApartadosPendientes;
     });
     
-    console.log('Total eventos:', allEventos.length);
-    console.log('Total apartados:', allApartados.length);
-    console.log('Apartados pendientes:', allApartados.filter(a => a.estado === 'apartado').length);
-    console.log('Eventos con apartados PENDIENTES:', filtered.length);
-    
     return filtered;
-  }, [allEventos, eventosConApartadosIds, isLoadingApartados, isLoading, allApartados]);
+  }, [allEventos, eventosConApartadosIds, isLoadingApartados, isLoading]);
 
   // Función para filtrar eventos
   const filteredEventos = eventosConApartados.filter((evento: Evento) => {
@@ -177,10 +170,20 @@ export const ConsultaApartados: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Consulta Apartados</h1>
-        <div className="text-sm text-gray-500">
-                          Solo eventos con apartados pendientes
+      {/* Header */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Consulta Apartados
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Solo eventos con apartados pendientes
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Clock className="h-8 w-8 text-blue-500" />
+          </div>
         </div>
       </div>
 

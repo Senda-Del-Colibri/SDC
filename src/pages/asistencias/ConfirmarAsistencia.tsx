@@ -229,9 +229,20 @@ export const ConfirmarAsistencia: React.FC = () => {
   if (isLoadingEventos || isLoadingClientes) {
     return (
       <div className="space-y-6">
-        <div className="page-header">
-          <h1 className="page-title">Confirmar Asistencias</h1>
-          <p className="page-subtitle">Confirmar apartados y registrar asistencias</p>
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Confirmar Asistencias
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Confirmar apartados y registrar asistencias
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="h-8 w-8 text-blue-500" />
+            </div>
+          </div>
         </div>
         <div className="flex justify-center py-12">
           <LoadingSpinner size="lg" />
@@ -242,11 +253,18 @@ export const ConfirmarAsistencia: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="page-header">
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="page-title">Confirmar Asistencias</h1>
-            <p className="page-subtitle">Confirmar apartados y registrar asistencias</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Confirmar Asistencias
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Confirmar apartados y registrar asistencias
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <CheckCircle className="h-8 w-8 text-blue-500" />
           </div>
           <Button
             onClick={() => navigate('/asistencias/apartar')}

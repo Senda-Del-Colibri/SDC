@@ -134,10 +134,20 @@ export const ConsultaAsistencias: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Consulta Asistencias</h1>
-        <div className="text-sm text-gray-500">
-                          Todos los eventos
+      {/* Header */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Consulta Asistencias
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Todos los eventos
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <CheckCircle className="h-8 w-8 text-blue-500" />
+          </div>
         </div>
       </div>
 

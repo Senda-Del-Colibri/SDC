@@ -214,11 +214,20 @@ export const AltaAsistencias: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="page-header">
-        <h1 className="page-title">Registrar Asistencia</h1>
-        <p className="page-subtitle">
-          Registrar la asistencia de clientes a eventos
-        </p>
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Registrar Asistencia
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Registrar la asistencia de clientes a eventos
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <CheckCircle className="h-8 w-8 text-blue-500" />
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

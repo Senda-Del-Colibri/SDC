@@ -15,7 +15,8 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  FileText
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { AuthService } from '../services/authService';
@@ -68,6 +69,15 @@ const navigationItems: NavigationItem[] = [
       { name: 'Apartar Lugar', href: '/asistencias/apartar', icon: Calendar },
       { name: 'Confirmar Asistencia', href: '/asistencias/confirmar', icon: CheckCircle },
       { name: 'Registro Directo', href: '/asistencias/alta', icon: User },
+    ]
+  },
+  {
+    name: 'Cartas Responsivas',
+    icon: FileText,
+    children: [
+      { name: 'Gestión Principal', href: '/responsivas', icon: FileText },
+      { name: 'Generación Individual', href: '/responsivas/individual', icon: User },
+      { name: 'Generación Masiva', href: '/responsivas/masiva', icon: Users },
     ]
   },
 ];

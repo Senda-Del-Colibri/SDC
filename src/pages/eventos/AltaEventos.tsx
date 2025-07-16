@@ -9,7 +9,8 @@ import {
   AlertCircle,
   CheckCircle,
   Users,
-  Clock
+  Clock,
+  CalendarPlus
 } from 'lucide-react';
 import { eventoService } from '../../services/api';
 import { Button, Input, Card, CardHeader, CardBody } from '../../components/ui';
@@ -176,11 +177,20 @@ export const AltaEventos: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="page-header">
-        <h1 className="page-title">Alta de Eventos</h1>
-        <p className="page-subtitle">
-          Crear nuevos eventos de meditación y actividades
-        </p>
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Alta de Eventos
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Crear nuevos eventos de meditación y actividades
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <CalendarPlus className="h-8 w-8 text-blue-500" />
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

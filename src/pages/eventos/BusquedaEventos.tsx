@@ -197,11 +197,20 @@ export const BusquedaEventos: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="page-header">
-        <h1 className="page-title">Búsqueda de Eventos</h1>
-        <p className="page-subtitle">
-          Ver y gestionar eventos existentes
-        </p>
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Búsqueda de Eventos
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Ver y gestionar eventos existentes
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Search className="h-8 w-8 text-blue-500" />
+          </div>
+        </div>
       </div>
 
       {/* Barra de búsqueda y filtros */}

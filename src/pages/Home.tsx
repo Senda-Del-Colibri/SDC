@@ -6,7 +6,8 @@ import {
   TrendingUp,
   DollarSign,
   UserCheck,
-  CalendarDays
+  CalendarDays,
+  Home as HomeIcon
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { statsService, eventoService } from '../services/api';
@@ -52,11 +53,20 @@ export const Home: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="page-header">
-        <h1 className="page-title">Dashboard</h1>
-        <p className="page-subtitle">
-          Bienvenido al sistema de gestión Senda del Colibrí
-        </p>
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Dashboard
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Bienvenido al sistema de gestión Senda del Colibrí
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <HomeIcon className="h-8 w-8 text-blue-500" />
+          </div>
+        </div>
       </div>
 
       {/* Estadísticas */}

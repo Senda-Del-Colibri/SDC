@@ -228,9 +228,20 @@ export const ApartarLugar: React.FC = () => {
   if (isLoadingClientes || isLoadingEventos) {
     return (
       <div className="space-y-6">
-        <div className="page-header">
-          <h1 className="page-title">Apartar Lugar</h1>
-          <p className="page-subtitle">Apartar lugar en evento con anticipo</p>
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Apartar Lugar
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Apartar lugar en evento con anticipo
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-8 w-8 text-blue-500" />
+            </div>
+          </div>
         </div>
         <div className="flex justify-center py-12">
           <LoadingSpinner size="lg" />
@@ -241,10 +252,19 @@ export const ApartarLugar: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Apartar Lugar</h1>
-          <p className="page-subtitle">Apartar lugar en evento con anticipo</p>
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Apartar Lugar
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Apartar lugar en evento con anticipo
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Calendar className="h-8 w-8 text-blue-500" />
+          </div>
         </div>
       </div>
 
