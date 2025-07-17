@@ -15,26 +15,50 @@ export const generarPDFResponsiva = (datos: DatosCartaResponsiva): jsPDF => {
   const lineHeight = 6;
   let currentY = margin;
   
-  // Función auxiliar para agregar texto con salto de línea automático
-  const addTextWithWrapping = (text: string, x: number, y: number, maxWidth: number, fontSize: number = 12): number => {
+  // Función auxiliar para agregar texto con justificación visual
+  const addTextWithWrapping = (
+    text: string,
+    x: number,
+    y: number,
+    maxWidth: number,
+    fontSize: number = 11 // Cambiado a 11
+  ): number => {
     pdf.setFontSize(fontSize);
     const lines = pdf.splitTextToSize(text, maxWidth);
-    
+
     lines.forEach((line: string, index: number) => {
-      pdf.text(line, x, y + (index * lineHeight));
+      if (index === lines.length - 1) {
+        pdf.text(line, x, y + (index * lineHeight), { maxWidth, align: 'left' });
+      } else {
+        const words = line.trim().split(' ');
+        if (words.length === 1) {
+          pdf.text(line, x, y + (index * lineHeight), { maxWidth, align: 'left' });
+        } else {
+          const lineWidth = pdf.getTextWidth(line);
+          const spaceCount = words.length - 1;
+          const extraSpace = (maxWidth - lineWidth) / spaceCount;
+          let offsetX = x;
+          words.forEach((word, i) => {
+            pdf.text(word, offsetX, y + (index * lineHeight));
+            if (i < spaceCount) {
+              offsetX += pdf.getTextWidth(word + ' ') + extraSpace;
+            }
+          });
+        }
+      }
     });
-    
+
     return y + (lines.length * lineHeight);
   };
   
   // Título principal
-  pdf.setFontSize(16);
+  pdf.setFontSize(11);
   pdf.setFont('helvetica', 'bold');
   pdf.text('¡Bienvenido a Senda del Colibrí!', pageWidth / 2, currentY, { align: 'center' });
   currentY += lineHeight * 2;
   
   // Texto introductorio
-  pdf.setFontSize(12);
+  pdf.setFontSize(11);
   pdf.setFont('helvetica', 'normal');
   const textoIntro = 'Nos sentimos honrados de acompañarte en este viaje de sanación y transformación. Estamos comprometidos con tu bienestar y con brindarte una experiencia segura y enriquecedora. Por favor, lee detenidamente esta responsiva antes de participar.';
   currentY = addTextWithWrapping(textoIntro, margin, currentY, pageWidth - (margin * 2)) + lineHeight;
@@ -42,7 +66,7 @@ export const generarPDFResponsiva = (datos: DatosCartaResponsiva): jsPDF => {
   // Declaración de aceptación
   pdf.setFont('helvetica', 'bold');
   const textoAceptacion = `Yo, ${datos.nombre.toUpperCase()}, ACEPTO TOMAR ESTA EXPERIENCIA DE MEDICINAS ANCESTRALES BAJO MI PROPIA RESPONSABILIDAD Y CON MI TOTAL CONSENTIMIENTO. DESLINDO DE TODA RESPONSABILIDAD A TERCERAS PERSONAS Y AL ESTABLECIMIENTO DONDE SE LLEVARÁ A CABO LA EXPERIENCIA.`;
-  currentY = addTextWithWrapping(textoAceptacion, margin, currentY, pageWidth - (margin * 2), 12) + lineHeight;
+  currentY = addTextWithWrapping(textoAceptacion, margin, currentY, pageWidth - (margin * 2), 11) + lineHeight;
   
   // Nota
   pdf.setFont('helvetica', 'bold');
@@ -71,7 +95,7 @@ export const generarPDFResponsiva = (datos: DatosCartaResponsiva): jsPDF => {
   // Preguntas de salud
   pdf.setFont('helvetica', 'bold');
   const pregunta1 = '¿Sufre o sospecha sufrir de algún trastorno psicológico como esquizofrenia, bipolaridad u otros problemas de salud mental?';
-  currentY = addTextWithWrapping(pregunta1, margin, currentY, pageWidth - (margin * 2), 12) + lineHeight;
+  currentY = addTextWithWrapping(pregunta1, margin, currentY, pageWidth - (margin * 2), 11) + lineHeight;
   
   pdf.setFont('helvetica', 'normal');
   pdf.text('Sí [ ]', margin, currentY);
@@ -89,7 +113,7 @@ export const generarPDFResponsiva = (datos: DatosCartaResponsiva): jsPDF => {
   
   pdf.setFont('helvetica', 'bold');
   const pregunta3 = '¿Ha tomado medicamentos controlados (ansiolíticos, antidepresivos, antipsicóticos, entre otros) en las últimas 24 horas?';
-  currentY = addTextWithWrapping(pregunta3, margin, currentY, pageWidth - (margin * 2), 12) + lineHeight;
+  currentY = addTextWithWrapping(pregunta3, margin, currentY, pageWidth - (margin * 2), 11) + lineHeight;
   
   pdf.setFont('helvetica', 'normal');
   pdf.text('Sí [ ]', margin, currentY);
