@@ -20,6 +20,7 @@ import { EventoDetails } from '../../components/EventoDetails';
 import type { Evento } from '../../types';
 import { toast } from 'react-toastify';
 import { exportEventosToCSV } from '../../utils/exportUtils';
+import { createLocalDate } from '../../utils';
 
 export const BusquedaEventos: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,8 +36,12 @@ export const BusquedaEventos: React.FC = () => {
     maxCobrado: '',
     minPersonas: '',
     maxPersonas: '',
+    fechaDesde: '',
+    fechaHasta: '',
     soloRentables: false,
-    soloConPerdida: false
+    soloConPerdida: false,
+    soloProximos: false,
+    soloPasados: false
   });
 
   // Query para obtener todos los eventos
@@ -82,6 +87,21 @@ export const BusquedaEventos: React.FC = () => {
       if (filters.minPersonas && evento.cantidad_personas < parseInt(filters.minPersonas)) return false;
       if (filters.maxPersonas && evento.cantidad_personas > parseInt(filters.maxPersonas)) return false;
       
+      // Filtro por fecha del evento
+      if (evento.fecha_evento) {
+        const fechaEvento = createLocalDate(evento.fecha_evento);
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        
+        if (filters.fechaDesde && fechaEvento < new Date(filters.fechaDesde)) return false;
+        if (filters.fechaHasta && fechaEvento > new Date(filters.fechaHasta)) return false;
+        if (filters.soloProximos && fechaEvento < hoy) return false;
+        if (filters.soloPasados && fechaEvento >= hoy) return false;
+      } else {
+        // Si no tiene fecha del evento, solo pasa si no se solicitan filtros de fecha específicos
+        if (filters.soloProximos || filters.soloPasados) return false;
+      }
+      
       // Filtro por rentabilidad
       const ganancia = evento.total_cobrado - evento.gasto;
       if (filters.soloRentables && ganancia <= 0) return false;
@@ -112,8 +132,12 @@ export const BusquedaEventos: React.FC = () => {
       maxCobrado: '',
       minPersonas: '',
       maxPersonas: '',
+      fechaDesde: '',
+      fechaHasta: '',
       soloRentables: false,
-      soloConPerdida: false
+      soloConPerdida: false,
+      soloProximos: false,
+      soloPasados: false
     });
   };
 
@@ -154,7 +178,7 @@ export const BusquedaEventos: React.FC = () => {
 
   // Formatear fecha
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-MX', {
+    return createLocalDate(dateString).toLocaleDateString('es-MX', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -173,11 +197,20 @@ export const BusquedaEventos: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="page-header">
-        <h1 className="page-title">Búsqueda de Eventos</h1>
-        <p className="page-subtitle">
-          Ver y gestionar eventos existentes
-        </p>
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Búsqueda de Eventos
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Ver y gestionar eventos existentes
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Search className="h-8 w-8 text-blue-500" />
+          </div>
+        </div>
       </div>
 
       {/* Barra de búsqueda y filtros */}
@@ -298,6 +331,26 @@ export const BusquedaEventos: React.FC = () => {
                     onChange={(e) => setFilters(prev => ({ ...prev, maxPersonas: e.target.value }))}
                   />
                 </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Fecha desde
+                  </label>
+                  <Input
+                    type="date"
+                    value={filters.fechaDesde}
+                    onChange={(e) => setFilters(prev => ({ ...prev, fechaDesde: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Fecha hasta
+                  </label>
+                  <Input
+                    type="date"
+                    value={filters.fechaHasta}
+                    onChange={(e) => setFilters(prev => ({ ...prev, fechaHasta: e.target.value }))}
+                  />
+                </div>
               </div>
               <div className="flex gap-4 mt-4">
                 <label className="flex items-center">
@@ -325,6 +378,32 @@ export const BusquedaEventos: React.FC = () => {
                     className="mr-2"
                   />
                   <span className="text-sm text-gray-600">Con pérdida</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={filters.soloProximos}
+                    onChange={(e) => setFilters(prev => ({ 
+                      ...prev, 
+                      soloProximos: e.target.checked,
+                      soloPasados: e.target.checked ? false : prev.soloPasados
+                    }))}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-600">Solo próximos</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={filters.soloPasados}
+                    onChange={(e) => setFilters(prev => ({ 
+                      ...prev, 
+                      soloPasados: e.target.checked,
+                      soloProximos: e.target.checked ? false : prev.soloProximos
+                    }))}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-600">Solo pasados</span>
                 </label>
               </div>
             </div>
@@ -423,7 +502,12 @@ export const BusquedaEventos: React.FC = () => {
                             {evento.nombre}
                           </div>
                           <div className="text-sm text-gray-500">
-                            ID: {evento.id} • {formatDate(evento.created_at)}
+                            ID: {evento.id} • Creado: {formatDate(evento.created_at)}
+                            {evento.fecha_evento && (
+                              <span className="block text-primary-600 font-medium">
+                                Evento: {formatDate(evento.fecha_evento)}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </td>

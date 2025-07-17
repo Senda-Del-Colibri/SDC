@@ -18,6 +18,8 @@ import { BusquedaClientes } from './pages/clientes/BusquedaClientes';
 // Evento pages
 import { AltaEventos } from './pages/eventos/AltaEventos';
 import { BusquedaEventos } from './pages/eventos/BusquedaEventos';
+import { ConsultaApartados } from './pages/eventos/ConsultaApartados';
+import { ConsultaAsistencias } from './pages/eventos/ConsultaAsistencias';
 
 // Referido pages
 import { AltaReferidos } from './pages/referidos/AltaReferidos';
@@ -25,6 +27,13 @@ import { ConsultaReferidos } from './pages/referidos/ConsultaReferidos';
 
 // Asistencia pages
 import { AltaAsistencias } from './pages/asistencias/AltaAsistencias';
+import { ApartarLugar } from './pages/asistencias/ApartarLugar';
+import { ConfirmarAsistencia } from './pages/asistencias/ConfirmarAsistencia';
+
+// Responsivas pages
+import { GestionResponsivas } from './pages/responsivas/GestionResponsivas';
+import { GeneracionIndividual } from './pages/responsivas/GeneracionIndividual';
+import { GeneracionMasiva } from './pages/responsivas/GeneracionMasiva';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -88,6 +97,22 @@ function App() {
               </ProtectedRoute>
             } />
             
+            <Route path="/eventos/apartados" element={
+              <ProtectedRoute>
+                <Layout>
+                  <ConsultaApartados />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/eventos/asistencias" element={
+              <ProtectedRoute>
+                <Layout>
+                  <ConsultaAsistencias />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
             {/* Referido routes */}
             <Route path="/referidos/alta" element={
               <ProtectedRoute>
@@ -110,6 +135,47 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <AltaAsistencias />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/asistencias/apartar" element={
+              <ProtectedRoute>
+                <Layout>
+                  <ApartarLugar />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/asistencias/confirmar" element={
+              <ProtectedRoute>
+                <Layout>
+                  <ConfirmarAsistencia />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            {/* Responsivas routes */}
+            <Route path="/responsivas" element={
+              <ProtectedRoute>
+                <Layout>
+                  <GestionResponsivas />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/responsivas/individual" element={
+              <ProtectedRoute>
+                <Layout>
+                  <GeneracionIndividual />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/responsivas/masiva" element={
+              <ProtectedRoute>
+                <Layout>
+                  <GeneracionMasiva />
                 </Layout>
               </ProtectedRoute>
             } />

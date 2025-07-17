@@ -109,9 +109,20 @@ export const ConsultaReferidos: React.FC = () => {
     return (
       <div className="space-y-6">
         {/* Header */}
-        <div className="page-header">
-          <h1 className="page-title">Consulta de Referidos</h1>
-          <p className="page-subtitle">Ver referidos por cliente</p>
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Consulta de Referidos
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Ver referidos por cliente
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Users className="h-8 w-8 text-blue-500" />
+            </div>
+          </div>
         </div>
         <div className="flex justify-center items-center py-12">
           <LoadingSpinner size="lg" />
@@ -123,9 +134,20 @@ export const ConsultaReferidos: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="page-header">
-        <h1 className="page-title">Consulta de Referidos</h1>
-        <p className="page-subtitle">Ver referidos por cliente</p>
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Consulta de Referidos
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Ver referidos por cliente
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Users className="h-8 w-8 text-blue-500" />
+          </div>
+        </div>
       </div>
 
       {/* Barra de búsqueda */}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Save, ArrowLeft } from 'lucide-react';
+import { User, Save, UserPlus } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { clienteService } from '../../services/api';
 import { Button, Input, Card, CardHeader, CardBody } from '../../components/ui';
@@ -96,19 +96,18 @@ export const AltaClientes: React.FC = () => {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
-      <div className="page-header">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={ArrowLeft}
-            onClick={() => navigate('/')}
-          >
-            Volver
-          </Button>
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="page-title">Alta de Clientes</h1>
-            <p className="page-subtitle">Registrar un nuevo cliente en el sistema</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Alta de Clientes
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Registrar un nuevo cliente en el sistema
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <UserPlus className="h-8 w-8 text-blue-500" />
           </div>
         </div>
       </div>

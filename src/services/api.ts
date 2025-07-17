@@ -4,10 +4,12 @@ import type {
   Evento, 
   Referido, 
   Asistencia, 
+  Apartado,
   ClienteForm, 
   EventoForm, 
   ReferidoForm, 
   AsistenciaForm,
+  ApartadoForm,
   DashboardStats
 } from '../types';
 
@@ -140,6 +142,36 @@ export const eventoService = {
     
     if (error) throw error;
     return data || [];
+  },
+
+  // Obtener próximo evento
+  async getProximoEvento(): Promise<Evento | null> {
+    const hoy = new Date().toISOString().split('T')[0];
+    const { data, error } = await supabase
+      .from('eventos')
+      .select('*')
+      .not('fecha_evento', 'is', null)
+      .gte('fecha_evento', hoy)
+      .order('fecha_evento', { ascending: true })
+      .limit(1);
+    
+    if (error) throw error;
+    return data?.[0] || null;
+  },
+
+  // Obtener últimos eventos finalizados
+  async getUltimosEventosFinalizados(limit: number = 3): Promise<Evento[]> {
+    const hoy = new Date().toISOString().split('T')[0];
+    const { data, error } = await supabase
+      .from('eventos')
+      .select('*')
+      .not('fecha_evento', 'is', null)
+      .lt('fecha_evento', hoy)
+      .order('fecha_evento', { ascending: false })
+      .limit(limit);
+    
+    if (error) throw error;
+    return data || [];
   }
 };
 
@@ -188,6 +220,93 @@ export const referidoService = {
     
     if (error) throw error;
     return data;
+  }
+};
+
+// =====================================================
+// SERVICIOS DE APARTADOS
+// =====================================================
+
+export const apartadoService = {
+  // Obtener todos los apartados
+  async getAll(): Promise<Apartado[]> {
+    const { data, error } = await supabase
+      .from('apartados')
+      .select(`
+        *,
+        cliente:cliente_id(id, nombre, apellidos),
+        evento:evento_id(id, nombre, ubicacion, fecha_evento)
+      `)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Obtener apartados por evento
+  async getByEventoId(eventoId: number): Promise<Apartado[]> {
+    const { data, error } = await supabase
+      .from('apartados')
+      .select(`
+        *,
+        cliente:cliente_id(id, nombre, apellidos),
+        evento:evento_id(id, nombre, ubicacion, fecha_evento)
+      `)
+      .eq('evento_id', eventoId)
+      .eq('estado', 'apartado')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Obtener apartado por ID
+  async getById(id: number): Promise<Apartado | null> {
+    const { data, error } = await supabase
+      .from('apartados')
+      .select(`
+        *,
+        cliente:cliente_id(id, nombre, apellidos),
+        evento:evento_id(id, nombre, ubicacion, fecha_evento)
+      `)
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Crear nuevo apartado
+  async create(apartado: ApartadoForm): Promise<Apartado> {
+    const { data, error } = await supabase
+      .from('apartados')
+      .insert(apartado)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Actualizar estado del apartado
+  async updateEstado(id: number, estado: 'apartado' | 'confirmado' | 'cancelado'): Promise<Apartado> {
+    const { data, error } = await supabase
+      .from('apartados')
+      .update({ 
+        estado,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Cancelar apartado
+  async cancelar(id: number): Promise<Apartado> {
+    return this.updateEstado(id, 'cancelado');
   }
 };
 
@@ -243,20 +362,45 @@ export const asistenciaService = {
 
   // Crear nueva asistencia
   async create(asistencia: AsistenciaForm): Promise<Asistencia> {
-    // Usar una transacción para garantizar consistencia
-    const { data, error } = await supabase.rpc('create_asistencia_with_stats', {
-      p_cliente_id: asistencia.cliente_id,
-      p_evento_id: asistencia.evento_id,
-      p_monto_pagado: asistencia.monto_pagado
-    });
-    
-    if (error) {
-      // Si la función RPC falla, intentar método manual
-      console.warn('RPC failed, trying manual method:', error);
-      return this.createManual(asistencia);
+    // Preparar datos para inserción
+    const asistenciaData = {
+      cliente_id: asistencia.cliente_id,
+      evento_id: asistencia.evento_id,
+      monto_pagado: asistencia.monto_pagado,
+      apartado_id: asistencia.apartado_id || undefined,
+      monto_anticipo: asistencia.monto_anticipo || 0,
+      monto_restante: asistencia.monto_restante || asistencia.monto_pagado
+    };
+
+    // Usar método manual ya que necesitamos manejar campos adicionales
+    return this.createManual(asistenciaData);
+  },
+
+  // Confirmar apartado y crear asistencia
+  async confirmarApartado(apartadoId: number, montoRestante: number): Promise<Asistencia> {
+    // Primero obtener el apartado
+    const apartado = await apartadoService.getById(apartadoId);
+    if (!apartado) {
+      throw new Error('Apartado no encontrado');
     }
-    
-    return data;
+
+    // Crear la asistencia
+    const asistenciaData: AsistenciaForm = {
+      cliente_id: apartado.cliente_id,
+      evento_id: apartado.evento_id,
+      monto_pagado: apartado.monto_anticipo + montoRestante,
+      apartado_id: apartado.id,
+      monto_anticipo: apartado.monto_anticipo,
+      monto_restante: montoRestante
+    };
+
+    // Crear asistencia
+    const asistencia = await this.createManual(asistenciaData);
+
+    // Actualizar estado del apartado
+    await apartadoService.updateEstado(apartadoId, 'confirmado');
+
+    return asistencia;
   },
 
   // Método manual de respaldo para crear asistencia

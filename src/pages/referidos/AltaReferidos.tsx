@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { clienteService, referidoService } from '../../services/api';
 import type { ReferidoForm } from '../../types';
@@ -174,9 +174,20 @@ export const AltaReferidos: React.FC = () => {
   if (isLoadingClientes) {
     return (
       <div className="space-y-6">
-        <div className="page-header">
-          <h1 className="page-title">Registrar Referido</h1>
-          <p className="page-subtitle">Registrar nuevo referido de cliente</p>
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Registrar Referido
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Registrar nuevo referido de cliente
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <UserPlus className="h-8 w-8 text-blue-500" />
+            </div>
+          </div>
         </div>
         <div className="flex justify-center py-12">
           <LoadingSpinner size="lg" />
@@ -187,19 +198,18 @@ export const AltaReferidos: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="page-header">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={ArrowLeft}
-            onClick={() => navigate('/referidos/consulta')}
-          >
-            Volver
-          </Button>
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="page-title">Registrar Referido</h1>
-            <p className="page-subtitle">Registrar nuevo referido de cliente</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Registrar Referido
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Registrar nuevo referido de cliente
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <UserPlus className="h-8 w-8 text-blue-500" />
           </div>
         </div>
       </div>
@@ -307,25 +317,6 @@ export const AltaReferidos: React.FC = () => {
         </form>
       </Card>
 
-      {/* Información importante */}
-      <Card className="p-6 bg-blue-50 border-blue-200">
-        <div className="flex items-start space-x-3">
-          <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
-          <div>
-            <h3 className="text-sm font-medium text-blue-900 mb-1">
-              Importante sobre los referidos
-            </h3>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Un cliente no puede referirse a sí mismo</li>
-              <li>• Un mismo cliente no puede referir a la misma persona más de una vez</li>
-              <li>• Una persona puede ser referida por múltiples clientes diferentes</li>
-              <li>• Los referidos no se pueden modificar ni eliminar una vez registrados</li>
-              <li>• Ambos clientes deben estar previamente registrados en el sistema</li>
-            </ul>
-          </div>
-        </div>
-      </Card>
-
       {/* Estadísticas rápidas */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-6">
@@ -352,6 +343,26 @@ export const AltaReferidos: React.FC = () => {
           </div>
         </Card>
       </div>
+
+      {/* Información importante */}
+      <Card className="p-6 bg-blue-50 border-blue-200">
+        <div className="flex items-start space-x-3">
+          <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-medium text-blue-900 mb-1">
+              Importante sobre los referidos
+            </h3>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Un cliente no puede referirse a sí mismo</li>
+              <li>• Un mismo cliente no puede referir a la misma persona más de una vez</li>
+              <li>• Cada persona solo puede ser referida una vez en el sistema</li>
+              <li>• Un cliente puede referir a múltiples personas diferentes</li>
+              <li>• Los referidos se registran automáticamente con la fecha actual</li>
+              <li>• Ambos clientes deben estar previamente registrados en el sistema</li>
+            </ul>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }; 

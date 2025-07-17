@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { Evento } from '../types';
 import { Card, CardHeader, CardBody } from './ui';
+import { createLocalDate } from '../utils';
 
 interface EventoDetailsProps {
   evento: Evento;
@@ -27,12 +28,10 @@ export const EventoDetails: React.FC<EventoDetailsProps> = ({ evento }) => {
 
   // Formatear fecha
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-MX', {
+    return createLocalDate(dateString).toLocaleDateString('es-MX', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      day: 'numeric'
     });
   };
 
@@ -90,6 +89,17 @@ export const EventoDetails: React.FC<EventoDetailsProps> = ({ evento }) => {
                 <p className="text-gray-900">{evento.ubicacion}</p>
               </div>
             </div>
+            {evento.fecha_evento && (
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Fecha del Evento
+                </label>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <p className="text-gray-900">{formatDate(evento.fecha_evento)}</p>
+                </div>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1">
                 Fecha de Creación
